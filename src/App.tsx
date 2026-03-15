@@ -94,8 +94,10 @@ const App: React.FC = () => {
 
   const weeklyDates = getWeeklyDates();
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  // プルダウン変更時の確実な更新
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const generateFortune = () => {
@@ -164,7 +166,7 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-black text-white font-sans flex flex-col items-center pb-20 relative overflow-x-hidden">
       
       {errorMsg && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] bg-red-600/90 backdrop-blur-md text-white px-8 py-4 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-300 font-bold border border-red-400">
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] bg-red-600/95 backdrop-blur-md text-white px-8 py-4 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-300 font-bold border border-red-400 text-sm whitespace-nowrap">
           {errorMsg}
         </div>
       )}
@@ -200,30 +202,30 @@ const App: React.FC = () => {
               <div className="absolute inset-0 border-4 border-t-cyan-400 rounded-full animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center text-4xl animate-pulse text-yellow-400">★</div>
             </div>
-            <p className="mt-8 text-cyan-400 tracking-widest animate-pulse">運命の糸を読み解いています...</p>
+            <p className="mt-8 text-cyan-400 tracking-widest animate-pulse text-sm">運命の糸を読み解いています...</p>
           </div>
         ) : page === 'INPUT' ? (
           <div className="space-y-6 animate-in fade-in duration-500">
             <h2 className="text-center text-2xl font-bold mb-8 bg-gradient-to-r from-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">占いたい方の情報を入力して下さい</h2>
             
             <div className="grid grid-cols-3 gap-3 text-xs">
-              <div className="space-y-2">
-                <p className="text-blue-300 font-medium text-center">生年月日</p><p className="text-center text-[10px]">年</p>
-                <select disabled={isLocked} value={formData.year} onChange={(e) => handleInputChange('year', e.target.value)} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
+              <div className="space-y-2 text-center">
+                <p className="text-blue-300 font-medium">生年月日</p><p className="text-[10px]">年</p>
+                <select name="year" disabled={isLocked} value={formData.year} onChange={handleSelectChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
                   <option value="不明">不明</option>
                   {Array.from({ length: 80 }, (_, i) => (2026 - i).toString()).map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
               </div>
-              <div className="space-y-2 flex flex-col justify-end">
-                <p className="text-center text-[10px]">月</p>
-                <select disabled={isLocked} value={formData.month} onChange={(e) => handleInputChange('month', e.target.value)} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
+              <div className="space-y-2 flex flex-col justify-end text-center">
+                <p className="text-[10px]">月</p>
+                <select name="month" disabled={isLocked} value={formData.month} onChange={handleSelectChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
                   <option value="不明">不明</option>
                   {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
               </div>
-              <div className="space-y-2 flex flex-col justify-end">
-                <p className="text-center text-[10px]">日</p>
-                <select disabled={isLocked} value={formData.day} onChange={(e) => handleInputChange('day', e.target.value)} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
+              <div className="space-y-2 flex flex-col justify-end text-center">
+                <p className="text-[10px]">日</p>
+                <select name="day" disabled={isLocked} value={formData.day} onChange={handleSelectChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
                   <option value="不明">不明</option>
                   {Array.from({ length: 31 }, (_, i) => (i + 1).toString()).map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
@@ -231,21 +233,21 @@ const App: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-3 gap-3 text-xs">
-              <div className="space-y-2"><p className="text-blue-300 font-medium text-center">血液型</p>
-                <select disabled={isLocked} value={formData.bloodType} onChange={(e) => handleInputChange('bloodType', e.target.value)} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
+              <div className="space-y-2 text-center"><p className="text-blue-300 font-medium">血液型</p>
+                <select name="bloodType" disabled={isLocked} value={formData.bloodType} onChange={handleSelectChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
                   <option value="不明">不明</option><option value="A型">A型</option><option value="B型">B型</option><option value="O型">O型</option><option value="AB型">AB型</option>
                 </select>
               </div>
-              <div className="space-y-2"><p className="text-blue-300 font-medium text-center">星座</p>
-                <select disabled={isLocked} value={formData.constellation} onChange={(e) => handleInputChange('constellation', e.target.value)} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
+              <div className="space-y-2 text-center"><p className="text-blue-300 font-medium">星座</p>
+                <select name="constellation" disabled={isLocked} value={formData.constellation} onChange={handleSelectChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
                   <option value="不明">不明</option>
                   <option value="牡羊座">牡羊座</option><option value="牡牛座">牡牛座</option><option value="双子座">双子座</option><option value="蟹座">蟹座</option>
                   <option value="獅子座">獅子座</option><option value="乙女座">乙女座</option><option value="天秤座">天秤座</option><option value="蠍座">蠍座</option>
                   <option value="射手座">射手座</option><option value="山羊座">山羊座</option><option value="水瓶座">水瓶座</option><option value="魚座">魚座</option>
                 </select>
               </div>
-              <div className="space-y-2"><p className="text-blue-300 font-medium text-center">干支</p>
-                <select disabled={isLocked} value={formData.zodiac} onChange={(e) => handleInputChange('zodiac', e.target.value)} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
+              <div className="space-y-2 text-center"><p className="text-blue-300 font-medium">干支</p>
+                <select name="zodiac" disabled={isLocked} value={formData.zodiac} onChange={handleSelectChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
                   <option value="不明">不明</option>
                   <option value="子">子</option><option value="丑">丑</option><option value="寅">寅</option><option value="卯">卯</option>
                   <option value="辰">辰</option><option value="巳">巳</option><option value="午">午</option><option value="未">未</option>
@@ -282,11 +284,11 @@ const App: React.FC = () => {
 
             <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-gray-800">
               <h3 className="text-sm font-bold text-white mb-2 text-center">精密バイオリズム解析</h3>
-              <p className="text-[10px] text-gray-500 mb-6 text-center">※生年月日不明の場合は、現時刻の周期に基づき算出しています。</p>
+              <p className="text-[10px] text-gray-500 mb-6 text-center px-4">※生年月日不明の場合は、現時刻の周期に基づき算出しています。</p>
               <div className="space-y-5">
                 {[{ label: '身体', val: fortuneResult.bio.physical, color: 'bg-emerald-500' }, { label: '感情', val: fortuneResult.bio.emotional, color: 'bg-pink-500' }, { label: '知性', val: fortuneResult.bio.intellectual, color: 'bg-cyan-500' }].map((item, idx) => (
-                  <div key={idx} className="space-y-1.5 px-2">
-                    <div className="flex justify-between text-[10px] text-gray-400"><span>{item.label}</span><span>{item.val}%</span></div>
+                  <div key={idx} className="space-y-1.5 px-2 text-left">
+                    <div className="flex justify-between text-[10px] text-gray-400 px-1"><span>{item.label}</span><span>{item.val}%</span></div>
                     <div className="h-1.5 w-full bg-black rounded-full overflow-hidden"><div className={`h-full ${item.color} transition-all duration-1000`} style={{ width: `${item.val}%` }}></div></div>
                   </div>
                 ))}
@@ -316,7 +318,7 @@ const App: React.FC = () => {
                   <span className="text-lg font-bold text-white">{fortuneResult.lucky.direction}</span>
                 </div>
                 <div className="bg-black/40 p-4 rounded-xl border border-white/5 flex flex-col items-center text-fuchsia-400">
-                  <span className="text-[10px] font-bold mb-1">数</span>
+                  <span className="text-[10px] font-bold mb-1 text-fuchsia-400">数</span>
                   <span className="text-lg font-bold text-white">{fortuneResult.lucky.number}</span>
                 </div>
               </div>
@@ -328,7 +330,7 @@ const App: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4">
               {[{ label: '金運', star: fortuneResult.stars.money, color: 'text-yellow-500', comm: fortuneResult.comments.money }, { label: '健康運', star: fortuneResult.stars.health, color: 'text-emerald-500', comm: fortuneResult.comments.health }, { label: '恋愛運', star: fortuneResult.stars.love, color: 'text-pink-500', comm: fortuneResult.comments.love }, { label: '仕事運', star: fortuneResult.stars.work, color: 'text-cyan-500', comm: fortuneResult.comments.work }].map((u, i) => (
-                <div key={i} className="bg-[#1e1e1e] p-4 rounded-2xl border border-gray-800">
+                <div key={i} className="bg-[#1e1e1e] p-4 rounded-2xl border border-gray-800 text-left">
                   <p className={`font-bold mb-2 text-xs ${u.color}`}>{u.label}</p>
                   <div className="mb-2">{renderStars(u.star)}</div>
                   <p className="text-[10px] text-gray-500 leading-tight">{u.comm}</p>
