@@ -21,6 +21,24 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // 1週間分の日付と曜日を生成する関数
+  const getWeeklyDates = () => {
+    const dayLabels = ['日', '月', '火', '水', '木', '金', '土'];
+    const dates = [];
+    const baseDate = new Date();
+    
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(baseDate);
+      d.setDate(baseDate.getDate() + i);
+      const dateStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+      const dayStr = dayLabels[d.getDay()];
+      dates.push({ date: dateStr, day: dayStr });
+    }
+    return dates;
+  };
+
+  const weeklyDates = getWeeklyDates();
+
   const handleLock = () => {
     localStorage.setItem('fortune_fixed_data', JSON.stringify(formData));
     setIsLocked(true);
@@ -42,7 +60,6 @@ const App: React.FC = () => {
 
   const handleFortune = () => {
     setLoading(true);
-    // 2秒間の神秘的な演出時間を設定
     setTimeout(() => {
       setLoading(false);
       setPage('RESULT');
@@ -67,14 +84,11 @@ const App: React.FC = () => {
 
       <div className="w-full max-w-md px-5">
         {loading ? (
-          /* 神秘的なローディング演出 */
           <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in duration-700">
             <div className="relative w-24 h-24">
               <div className="absolute inset-0 border-4 border-fuchsia-500/20 rounded-full"></div>
               <div className="absolute inset-0 border-4 border-t-cyan-400 rounded-full animate-spin"></div>
-              <div className="absolute inset-0 flex items-center justify-center text-4xl animate-pulse text-yellow-400">
-                ★
-              </div>
+              <div className="absolute inset-0 flex items-center justify-center text-4xl animate-pulse text-yellow-400">★</div>
             </div>
             <p className="mt-8 text-cyan-400 tracking-[0.2em] font-light animate-pulse">運命の糸を読み解いています...</p>
           </div>
@@ -109,19 +123,19 @@ const App: React.FC = () => {
             <div className="grid grid-cols-3 gap-3 text-xs">
               <div className="space-y-2">
                 <p className="text-blue-300">血液型</p>
-                <select disabled={isLocked} value={formData.bloodType} onChange={(e)=>setFormData({...formData, bloodType: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none disabled:opacity-50">
+                <select disabled={isLocked} value={formData.bloodType} onChange={(e)=>setFormData({...formData, bloodType: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
                   <option>不明</option><option>A型</option><option>B型</option><option>O型</option><option>AB型</option>
                 </select>
               </div>
               <div className="space-y-2">
                 <p className="text-blue-300">星座</p>
-                <select disabled={isLocked} value={formData.constellation} onChange={(e)=>setFormData({...formData, constellation: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none disabled:opacity-50">
+                <select disabled={isLocked} value={formData.constellation} onChange={(e)=>setFormData({...formData, constellation: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
                   <option>不明</option><option>牡羊座</option><option>牡牛座</option><option>双子座</option><option>蟹座</option><option>獅子座</option><option>乙女座</option><option>天秤座</option><option>蠍座</option><option>射手座</option><option>山羊座</option><option>水瓶座</option><option>魚座</option>
                 </select>
               </div>
               <div className="space-y-2">
                 <p className="text-blue-300">干支</p>
-                <select disabled={isLocked} value={formData.zodiac} onChange={(e)=>setFormData({...formData, zodiac: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none disabled:opacity-50">
+                <select disabled={isLocked} value={formData.zodiac} onChange={(e)=>setFormData({...formData, zodiac: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
                   <option>不明</option><option>子</option><option>丑</option><option>寅</option><option>卯</option><option>辰</option><option>巳</option><option>午</option><option>未</option><option>申</option><option>酉</option><option>戌</option><option>亥</option>
                 </select>
               </div>
@@ -131,7 +145,7 @@ const App: React.FC = () => {
               <p className="text-blue-300 text-xs">占う日</p>
               <div className="flex bg-[#0f172a] rounded-lg p-1 border border-slate-800">
                 {(['今日', '明日'] as const).map((d) => (
-                  <button key={d} onClick={() => setTargetDate(d)} className={`flex-1 py-3 text-sm rounded-lg transition-all ${targetDate === d ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-500'}`}>
+                  <button key={d} onClick={() => setTargetDate(d)} className={`flex-1 py-3 text-sm rounded-lg transition-all ${targetDate === d ? 'bg-indigo-600 text-white' : 'text-gray-500'}`}>
                     {d}
                   </button>
                 ))}
@@ -145,12 +159,8 @@ const App: React.FC = () => {
                 </button>
               ) : (
                 <>
-                  <button onClick={handleUnlock} className="bg-red-900/30 hover:bg-red-900/50 text-red-200 text-xs py-2.5 px-4 rounded-lg transition-colors border border-red-800/50">
-                    固定を解除
-                  </button>
-                  <button onClick={handleResetForOther} className="bg-[#2c3748] hover:bg-[#3d4b5f] text-gray-200 text-xs py-2.5 px-4 rounded-lg transition-colors border border-slate-700">
-                    他人を占う
-                  </button>
+                  <button onClick={handleUnlock} className="bg-red-900/30 hover:bg-red-900/50 text-red-200 text-xs py-2.5 px-4 rounded-lg transition-colors border border-red-800/50">固定を解除</button>
+                  <button onClick={handleResetForOther} className="bg-[#2c3748] hover:bg-[#3d4b5f] text-gray-200 text-xs py-2.5 px-4 rounded-lg transition-colors border border-slate-700">他人を占う</button>
                 </>
               )}
             </div>
@@ -163,7 +173,7 @@ const App: React.FC = () => {
           <div className="space-y-6 animate-in slide-in-from-bottom-10 duration-700">
             <div className="bg-[#111827] border border-slate-800 p-5 rounded-xl text-center">
               <p className="text-cyan-400 text-[10px] mb-1 font-bold tracking-widest uppercase">Reading Date</p>
-              <p className="text-xl font-bold tracking-widest">2026-03-15</p>
+              <p className="text-xl font-bold tracking-widest">{weeklyDates[0].date}</p>
             </div>
 
             <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-gray-800">
@@ -182,25 +192,23 @@ const App: React.FC = () => {
               <p className="text-sm text-gray-300">今日は一つだけでも前向きな行動を選んでみてください。</p>
             </div>
 
-            {/* 今週のバイオリズム（7日分に拡張） */}
+            {/* 今週のバイオリズム（日付＋曜日の追加） */}
             <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-yellow-900/20">
               <h3 className="text-lg font-bold text-yellow-500 mb-6 font-serif italic tracking-tighter">今週のバイオリズム</h3>
               <div className="space-y-4">
-                {[
-                  { d: '2026-03-15', s: 5, t: '前向きな流れが強い日です。人との交流が幸運につながります。' },
-                  { d: '2026-03-16', s: 2, t: '少し運気が低調です。休息を意識しましょう。' },
-                  { d: '2026-03-17', s: 3, t: '穏やかな流れです。焦らず丁寧に進めましょう。' },
-                  { d: '2026-03-18', s: 4, t: '良い流れに乗りやすい日です。周囲との協力が鍵になります。' },
-                  { d: '2026-03-19', s: 5, t: 'エネルギーに満ち溢れています。挑戦を楽しみましょう。' },
-                  { d: '2026-03-20', s: 3, t: '内面の整理に適した日。自分自身を労わってください。' },
-                  { d: '2026-03-21', s: 4, t: '新しいアイデアが湧く予感。メモを取ることを忘れずに。' },
-                ].map((item, idx) => (
+                {weeklyDates.map((item, idx) => (
                   <div key={idx} className="bg-black/40 p-4 rounded-xl border border-gray-800">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs text-gray-400 font-mono">{item.d}</span>
-                      {renderStars(item.s)}
+                      <span className="text-xs text-gray-400 font-mono">
+                        {item.date}（{item.day}）
+                      </span>
+                      {renderStars(idx === 0 ? 5 : idx % 2 === 0 ? 3 : 4)}
                     </div>
-                    <p className="text-[13px] text-gray-300 leading-relaxed">{item.t}</p>
+                    <p className="text-[13px] text-gray-300 leading-relaxed">
+                      {idx === 0 ? '前向きな流れが強い日です。人との交流が幸運につながります。' : 
+                       idx === 1 ? '少し運気が低調です。休息を意識しましょう。' :
+                       '穏やかな流れです。一歩ずつ丁寧に進むことが開運の鍵となります。'}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -208,12 +216,12 @@ const App: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-[#1e1e1e] p-4 rounded-2xl border border-gray-800">
-                <p className="font-bold mb-2">金運</p>
+                <p className="font-bold mb-2 text-sm">金運</p>
                 <div className="mb-2 text-xs">{renderStars(1)}</div>
                 <p className="text-[11px] text-gray-400">必要なものを見極めると金運が安定します。</p>
               </div>
               <div className="bg-[#1e1e1e] p-4 rounded-2xl border border-gray-800">
-                <p className="font-bold mb-2">健康運</p>
+                <p className="font-bold mb-2 text-sm">健康運</p>
                 <div className="mb-2 text-xs">{renderStars(2)}</div>
                 <p className="text-[11px] text-gray-400">軽い運動が心身のバランスを整えてくれます。</p>
               </div>
