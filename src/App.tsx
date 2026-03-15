@@ -55,6 +55,7 @@ const App: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [fortuneResult, setFortuneResult] = useState<any>(null);
 
+  // フォームデータ
   const initialData = { year: '不明', month: '不明', day: '不明', bloodType: '不明', constellation: '不明', zodiac: '不明' };
   const [formData, setFormData] = useState(initialData);
 
@@ -63,16 +64,17 @@ const App: React.FC = () => {
     if (saved) { setFormData(JSON.parse(saved)); setIsLocked(true); }
   }, []);
 
-  const calculateBiorhythm = (year: string, month: string, day: string, target: Date) => {
-    const birthDate = (year === '不明' || month === '不明' || day === '不明') 
-      ? new Date(2000, 0, 1) 
-      : new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
-    const diff = Math.floor((target.getTime() - birthDate.getTime()) / (24 * 60 * 60 * 1000));
-    return {
-      physical: Math.round(Math.sin((2 * Math.PI * diff) / 23) * 50 + 50),
-      emotional: Math.round(Math.sin((2 * Math.PI * diff) / 28) * 50 + 50),
-      intellectual: Math.round(Math.sin((2 * Math.PI * diff) / 33) * 50 + 50)
-    };
+  // 選択肢の生成
+  const years = Array.from({ length: 80 }, (_, i) => (2026 - i).toString());
+  const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
+  const days = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+  const bloodTypes = ['A型', 'B型', 'O型', 'AB型'];
+  const constellations = ['牡羊座', '牡牛座', '双子座', '蟹座', '獅子座', '乙女座', '天秤座', '蠍座', '射手座', '山羊座', '水瓶座', '魚座'];
+  const zodiacs = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const getWeeklyDates = () => {
@@ -91,14 +93,7 @@ const App: React.FC = () => {
     }
     return dates;
   };
-
   const weeklyDates = getWeeklyDates();
-
-  // プルダウン変更時の確実な更新
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
 
   const generateFortune = () => {
     const isAllUnknown = Object.values(formData).every(val => val === '不明');
@@ -118,7 +113,7 @@ const App: React.FC = () => {
     if (formData.constellation === "不明") {
       message = fortuneDatabase.elementMessages.UNKNOWN;
     } else {
-      let element: keyof typeof fortuneDatabase.elementMessages = 'FIRE';
+      let element: keyof typeof ELEMENTS = 'FIRE';
       if (ELEMENTS.EARTH.includes(formData.constellation)) element = 'EARTH';
       if (ELEMENTS.AIR.includes(formData.constellation)) element = 'AIR';
       if (ELEMENTS.WATER.includes(formData.constellation)) element = 'WATER';
@@ -126,10 +121,17 @@ const App: React.FC = () => {
       message = (fortuneDatabase.elementMessages[element] as any)[bloodKey] || (fortuneDatabase.elementMessages[element] as any).default;
     }
 
-    const bio = calculateBiorhythm(formData.year, formData.month, formData.day, target);
-    const result = {
+    const birthBase = (formData.year === '不明' || formData.month === '不明') ? new Date(2000, 0, 1) : new Date(`${formData.year}-${formData.month}-${formData.day}`);
+    const diff = Math.floor((target.getTime() - birthBase.getTime()) / (24 * 60 * 60 * 1000));
+    const bio = {
+      physical: Math.round(Math.sin((2 * Math.PI * diff) / 23) * 50 + 50),
+      emotional: Math.round(Math.sin((2 * Math.PI * diff) / 28) * 50 + 50),
+      intellectual: Math.round(Math.sin((2 * Math.PI * diff) / 33) * 50 + 50)
+    };
+
+    setFortuneResult({
       general: message,
-      bio: bio,
+      bio,
       lucky: {
         item: fortuneDatabase.luckyItems[seed % fortuneDatabase.luckyItems.length],
         color: fortuneDatabase.luckyColors[(seed + 7) % fortuneDatabase.luckyColors.length],
@@ -142,15 +144,9 @@ const App: React.FC = () => {
         health: Math.floor(bio.physical / 20) + 1,
         love: (seed % 4) + 2,
         work: Math.floor(bio.intellectual / 20) + 1,
-      },
-      comments: {
-        money: "必要なものを見極めると金運が安定します。",
-        health: "軽い運動が心身のバランスを整えてくれます。",
-        love: "焦らず穏やかに向き合うことで関係が深まります。",
-        work: "今日は地道な努力が実りやすい日です。"
       }
-    };
-    setFortuneResult(result);
+    });
+
     setTimeout(() => { setLoading(false); setPage('RESULT'); window.scrollTo(0, 0); }, 2000);
   };
 
@@ -166,7 +162,7 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-black text-white font-sans flex flex-col items-center pb-20 relative overflow-x-hidden">
       
       {errorMsg && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] bg-red-600/95 backdrop-blur-md text-white px-8 py-4 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-300 font-bold border border-red-400 text-sm whitespace-nowrap">
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] bg-red-600 text-white px-8 py-4 rounded-2xl shadow-2xl font-bold border border-red-400 whitespace-nowrap animate-bounce text-sm">
           {errorMsg}
         </div>
       )}
@@ -180,16 +176,16 @@ const App: React.FC = () => {
       </div>
 
       {showManual && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowManual(false)}></div>
-          <div className="relative bg-[#111827] border border-slate-700 p-8 rounded-3xl max-w-sm w-full shadow-2xl text-left text-sm text-gray-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6" onClick={() => setShowManual(false)}>
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+          <div className="relative bg-[#111827] border border-slate-700 p-8 rounded-3xl max-w-sm w-full shadow-2xl text-left" onClick={e => e.stopPropagation()}>
             <h3 className="text-xl font-bold text-cyan-400 mb-6 border-b border-slate-800 pb-2 text-center">鑑定マニュアル</h3>
-            <ul className="space-y-4">
+            <ul className="space-y-4 text-sm text-gray-300">
               <li>1. 情報を入力し「鑑定を開始する」をタップ。</li>
               <li>2. 全ての項目が不明な場合は鑑定できません。</li>
-              <li>3. 「入力を固定」で次回から自動表示されます。</li>
+              <li>3. 「入力を固定」すると、次回から自動表示されます。</li>
             </ul>
-            <button onClick={() => setShowManual(false)} className="mt-8 w-full py-3 bg-gradient-to-r from-fuchsia-600 to-cyan-600 rounded-xl font-bold text-white">閉じる</button>
+            <button onClick={() => setShowManual(false)} className="mt-8 w-full py-3 bg-gradient-to-r from-fuchsia-600 to-cyan-600 rounded-xl font-bold">閉じる</button>
           </div>
         </div>
       )}
@@ -197,12 +193,8 @@ const App: React.FC = () => {
       <div className="w-full max-w-md px-5">
         {loading ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh]">
-            <div className="relative w-24 h-24">
-              <div className="absolute inset-0 border-4 border-fuchsia-500/20 rounded-full"></div>
-              <div className="absolute inset-0 border-4 border-t-cyan-400 rounded-full animate-spin"></div>
-              <div className="absolute inset-0 flex items-center justify-center text-4xl animate-pulse text-yellow-400">★</div>
-            </div>
-            <p className="mt-8 text-cyan-400 tracking-widest animate-pulse text-sm">運命の糸を読み解いています...</p>
+            <div className="w-24 h-24 border-4 border-t-cyan-400 border-fuchsia-500/20 rounded-full animate-spin"></div>
+            <p className="mt-8 text-cyan-400 tracking-widest animate-pulse text-sm font-light">運命の糸を読み解いています...</p>
           </div>
         ) : page === 'INPUT' ? (
           <div className="space-y-6 animate-in fade-in duration-500">
@@ -211,47 +203,44 @@ const App: React.FC = () => {
             <div className="grid grid-cols-3 gap-3 text-xs">
               <div className="space-y-2 text-center">
                 <p className="text-blue-300 font-medium">生年月日</p><p className="text-[10px]">年</p>
-                <select name="year" disabled={isLocked} value={formData.year} onChange={handleSelectChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
+                <select name="year" disabled={isLocked} value={formData.year} onChange={handleInputChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none text-white appearance-none">
                   <option value="不明">不明</option>
-                  {Array.from({ length: 80 }, (_, i) => (2026 - i).toString()).map(y => <option key={y} value={y}>{y}</option>)}
+                  {years.map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
               </div>
               <div className="space-y-2 flex flex-col justify-end text-center">
                 <p className="text-[10px]">月</p>
-                <select name="month" disabled={isLocked} value={formData.month} onChange={handleSelectChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
+                <select name="month" disabled={isLocked} value={formData.month} onChange={handleInputChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none text-white appearance-none">
                   <option value="不明">不明</option>
-                  {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(m => <option key={m} value={m}>{m}</option>)}
+                  {months.map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
               </div>
               <div className="space-y-2 flex flex-col justify-end text-center">
                 <p className="text-[10px]">日</p>
-                <select name="day" disabled={isLocked} value={formData.day} onChange={handleSelectChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
+                <select name="day" disabled={isLocked} value={formData.day} onChange={handleInputChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none text-white appearance-none">
                   <option value="不明">不明</option>
-                  {Array.from({ length: 31 }, (_, i) => (i + 1).toString()).map(d => <option key={d} value={d}>{d}</option>)}
+                  {days.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3 text-xs">
               <div className="space-y-2 text-center"><p className="text-blue-300 font-medium">血液型</p>
-                <select name="bloodType" disabled={isLocked} value={formData.bloodType} onChange={handleSelectChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
-                  <option value="不明">不明</option><option value="A型">A型</option><option value="B型">B型</option><option value="O型">O型</option><option value="AB型">AB型</option>
+                <select name="bloodType" disabled={isLocked} value={formData.bloodType} onChange={handleInputChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none text-white appearance-none">
+                  <option value="不明">不明</option>
+                  {bloodTypes.map(bt => <option key={bt} value={bt}>{bt}</option>)}
                 </select>
               </div>
               <div className="space-y-2 text-center"><p className="text-blue-300 font-medium">星座</p>
-                <select name="constellation" disabled={isLocked} value={formData.constellation} onChange={handleSelectChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
+                <select name="constellation" disabled={isLocked} value={formData.constellation} onChange={handleInputChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none text-white appearance-none">
                   <option value="不明">不明</option>
-                  <option value="牡羊座">牡羊座</option><option value="牡牛座">牡牛座</option><option value="双子座">双子座</option><option value="蟹座">蟹座</option>
-                  <option value="獅子座">獅子座</option><option value="乙女座">乙女座</option><option value="天秤座">天秤座</option><option value="蠍座">蠍座</option>
-                  <option value="射手座">射手座</option><option value="山羊座">山羊座</option><option value="水瓶座">水瓶座</option><option value="魚座">魚座</option>
+                  {constellations.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div className="space-y-2 text-center"><p className="text-blue-300 font-medium">干支</p>
-                <select name="zodiac" disabled={isLocked} value={formData.zodiac} onChange={handleSelectChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-cyan-500">
+                <select name="zodiac" disabled={isLocked} value={formData.zodiac} onChange={handleInputChange} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none text-white appearance-none">
                   <option value="不明">不明</option>
-                  <option value="子">子</option><option value="丑">丑</option><option value="寅">寅</option><option value="卯">卯</option>
-                  <option value="辰">辰</option><option value="巳">巳</option><option value="午">午</option><option value="未">未</option>
-                  <option value="申">申</option><option value="酉">酉</option><option value="戌">戌</option><option value="亥">亥</option>
+                  {zodiacs.map(z => <option key={z} value={z}>{z}</option>)}
                 </select>
               </div>
             </div>
@@ -263,39 +252,48 @@ const App: React.FC = () => {
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
-              {!isLocked ? <button onClick={() => {localStorage.setItem('fortune_fixed_data', JSON.stringify(formData)); setIsLocked(true);}} className="bg-[#2c3748] text-gray-200 text-[10px] py-2 px-5 rounded-lg border border-slate-700">入力を固定する</button> :
-              <><button onClick={() => {localStorage.removeItem('fortune_fixed_data'); setIsLocked(false);}} className="bg-red-900/20 text-red-300 text-[10px] py-2 px-4 rounded-lg border border-red-900/40">解除</button><button onClick={() => {setFormData(initialData); setIsLocked(false);}} className="bg-[#2c3748] text-gray-200 text-[10px] py-2 px-4 rounded-lg border border-slate-700">他人を占う</button></>}
+              {!isLocked ? 
+                <button onClick={() => {localStorage.setItem('fortune_fixed_data', JSON.stringify(formData)); setIsLocked(true);}} className="bg-[#2c3748] text-gray-200 text-[10px] py-2 px-5 rounded-lg border border-slate-700">入力を固定する</button> :
+                <><button onClick={() => {localStorage.removeItem('fortune_fixed_data'); setIsLocked(false);}} className="bg-red-900/20 text-red-300 text-[10px] py-2 px-4 rounded-lg border border-red-900/40">解除</button><button onClick={() => {setFormData(initialData); setIsLocked(false);}} className="bg-[#2c3748] text-gray-200 text-[10px] py-2 px-4 rounded-lg border border-slate-700 text-xs">他人を占う</button></>
+              }
             </div>
 
             <button onClick={generateFortune} className="w-full py-5 rounded-2xl font-bold text-lg bg-gradient-to-r from-fuchsia-500 to-cyan-500 mt-2 active:scale-95 shadow-lg shadow-fuchsia-500/20">鑑定を開始する</button>
           </div>
         ) : (
-          <div className="space-y-6 animate-in slide-in-from-bottom-10 text-left pb-10">
-            <div className="bg-[#111827] border border-slate-800 p-5 rounded-xl text-center shadow-inner">
-              <p className="text-cyan-400 text-[10px] mb-1 font-bold uppercase tracking-widest">鑑定日</p>
+          <div className="space-y-6 animate-in slide-in-from-bottom-10 pb-10">
+            <div className="bg-[#111827] border border-slate-800 p-5 rounded-xl text-center">
+              <p className="text-cyan-400 text-[10px] mb-1 font-bold uppercase tracking-widest text-xs">鑑定日</p>
               <p className="text-xl font-bold text-white tracking-widest">{weeklyDates[0].date}</p>
             </div>
 
-            <div className="bg-[#1e1e1e] p-7 rounded-3xl border border-gray-800 shadow-xl">
-              <h3 className="text-lg font-bold mb-4 text-white text-center border-b border-gray-800 pb-3">今日の総合運</h3>
+            <div className="bg-[#1e1e1e] p-7 rounded-3xl border border-gray-800 shadow-xl text-left">
+              <h3 className="text-lg font-bold mb-4 text-white text-center">今日の総合運</h3>
               <div className="flex justify-center mb-5">{renderStars(fortuneResult.stars.total)}</div>
               <p className="text-[15px] text-gray-300 leading-relaxed font-light">{fortuneResult.general}</p>
             </div>
 
-            <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-gray-800">
+            {/* バイオリズム解析 */}
+            <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-gray-800 text-left">
               <h3 className="text-sm font-bold text-white mb-2 text-center">精密バイオリズム解析</h3>
-              <p className="text-[10px] text-gray-500 mb-6 text-center px-4">※生年月日不明の場合は、現時刻の周期に基づき算出しています。</p>
+              <p className="text-[10px] text-gray-500 mb-6 text-center px-4 leading-relaxed">※生年月日不明の場合は、現時刻の周期に基づき算出しています。</p>
               <div className="space-y-5">
-                {[{ label: '身体', val: fortuneResult.bio.physical, color: 'bg-emerald-500' }, { label: '感情', val: fortuneResult.bio.emotional, color: 'bg-pink-500' }, { label: '知性', val: fortuneResult.bio.intellectual, color: 'bg-cyan-500' }].map((item, idx) => (
-                  <div key={idx} className="space-y-1.5 px-2 text-left">
-                    <div className="flex justify-between text-[10px] text-gray-400 px-1"><span>{item.label}</span><span>{item.val}%</span></div>
-                    <div className="h-1.5 w-full bg-black rounded-full overflow-hidden"><div className={`h-full ${item.color} transition-all duration-1000`} style={{ width: `${item.val}%` }}></div></div>
+                {[
+                  { label: '身体', val: fortuneResult.bio.physical, color: 'bg-emerald-500' },
+                  { label: '感情', val: fortuneResult.bio.emotional, color: 'bg-pink-500' },
+                  { label: '知性', val: fortuneResult.bio.intellectual, color: 'bg-cyan-500' }
+                ].map((item, idx) => (
+                  <div key={idx} className="space-y-1.5 px-2">
+                    <div className="flex justify-between text-[10px] text-gray-400"><span>{item.label}</span><span>{item.val}%</span></div>
+                    <div className="h-1.5 w-full bg-black rounded-full overflow-hidden">
+                      <div className={`h-full ${item.color} transition-all duration-1000`} style={{ width: `${item.val}%` }}></div>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-yellow-900/20">
+            <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-yellow-900/20 text-left">
               <h3 className="text-lg font-bold text-yellow-500 mb-6 font-serif italic text-center">今週のバイオリズム</h3>
               <div className="space-y-4">
                 {weeklyDates.map((item, idx) => (
@@ -315,22 +313,31 @@ const App: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-black/40 p-4 rounded-xl border border-white/5 flex flex-col items-center">
                   <span className="text-[10px] text-emerald-400 font-bold mb-1">吉方位</span>
-                  <span className="text-lg font-bold text-white">{fortuneResult.lucky.direction}</span>
+                  <span className="text-lg font-bold text-white font-serif">{fortuneResult.lucky.direction}</span>
                 </div>
                 <div className="bg-black/40 p-4 rounded-xl border border-white/5 flex flex-col items-center text-fuchsia-400">
-                  <span className="text-[10px] font-bold mb-1 text-fuchsia-400">数</span>
+                  <span className="text-[10px] font-bold mb-1">数</span>
                   <span className="text-lg font-bold text-white">{fortuneResult.lucky.number}</span>
                 </div>
               </div>
               <div className="mt-4 space-y-3 text-xs">
-                <div className="bg-black/40 p-3 rounded-xl border border-white/5 flex justify-between px-4"><span className="text-gray-500">アイテム:</span><span className="text-gray-200 font-bold">{fortuneResult.lucky.item}</span></div>
-                <div className="bg-black/40 p-3 rounded-xl border border-white/5 flex justify-between px-4"><span className="text-gray-500">カラー:</span><span className="text-gray-200 font-bold">{fortuneResult.lucky.color}</span></div>
+                <div className="bg-black/40 p-3 rounded-xl border border-white/5 flex justify-between px-4">
+                  <span className="text-gray-500">アイテム:</span><span className="text-gray-200 font-bold">{fortuneResult.lucky.item}</span>
+                </div>
+                <div className="bg-black/40 p-3 rounded-xl border border-white/5 flex justify-between px-4">
+                  <span className="text-gray-500">カラー:</span><span className="text-gray-200 font-bold">{fortuneResult.lucky.color}</span>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              {[{ label: '金運', star: fortuneResult.stars.money, color: 'text-yellow-500', comm: fortuneResult.comments.money }, { label: '健康運', star: fortuneResult.stars.health, color: 'text-emerald-500', comm: fortuneResult.comments.health }, { label: '恋愛運', star: fortuneResult.stars.love, color: 'text-pink-500', comm: fortuneResult.comments.love }, { label: '仕事運', star: fortuneResult.stars.work, color: 'text-cyan-500', comm: fortuneResult.comments.work }].map((u, i) => (
-                <div key={i} className="bg-[#1e1e1e] p-4 rounded-2xl border border-gray-800 text-left">
+            <div className="grid grid-cols-2 gap-4 text-left">
+              {[
+                { label: '金運', star: fortuneResult.stars.money, color: 'text-yellow-500', comm: "必要なものを見極めると金運が安定します。" },
+                { label: '健康運', star: fortuneResult.stars.health, color: 'text-emerald-500', comm: "軽い運動が心身のバランスを整えます。" },
+                { label: '恋愛運', star: fortuneResult.stars.love, color: 'text-pink-500', comm: "焦らず穏やかな心で関係を深めましょう。" },
+                { label: '仕事運', star: fortuneResult.stars.work, color: 'text-cyan-500', comm: "地道な努力が実を結ぶ一日になります。" }
+              ].map((u, i) => (
+                <div key={i} className="bg-[#1e1e1e] p-4 rounded-2xl border border-gray-800">
                   <p className={`font-bold mb-2 text-xs ${u.color}`}>{u.label}</p>
                   <div className="mb-2">{renderStars(u.star)}</div>
                   <p className="text-[10px] text-gray-500 leading-tight">{u.comm}</p>
