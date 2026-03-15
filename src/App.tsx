@@ -39,7 +39,8 @@ const fortuneDatabase = {
       O: "溢れる慈愛が周囲を癒します。あなたの優しさが波紋のように広がり、愛に満ちた素晴らしい環境が整っていくでしょう。",
       AB: "神秘的な直感力が冴え、物事の裏側を見抜く力が備わっています。自分の内側に宿る無限の知恵を信じて行動してください。",
       default: "感情の豊かさが運命を彩ります。純粋な心を持ち続けることが、最大の守護となるでしょう。"
-    }
+    },
+    UNKNOWN: "今のあなたは未知の可能性に満ちています。既存の枠組みにとらわれず、自分自身の内なる声を信じることで、新しい道が開かれるでしょう。"
   },
   luckyItems: ["アンティーク調の鍵", "シルクの布", "天然石", "銀のブックマーク", "手書きのメモ", "クリスタル", "麻のポーチ"],
   luckyColors: ["ミッドナイトブルー", "シャンパンゴールド", "ライラック", "セージグリーン", "テラコッタ", "パールホワイト"]
@@ -53,7 +54,7 @@ const App: React.FC = () => {
   const [showManual, setShowManual] = useState(false);
   const [fortuneResult, setFortuneResult] = useState<any>(null);
 
-  const initialData = { year: '1980', month: '1', day: '1', bloodType: 'A型', constellation: '牡羊座', zodiac: '子' };
+  const initialData = { year: '1980', month: '1', day: '1', bloodType: '不明', constellation: '不明', zodiac: '不明' };
   const [formData, setFormData] = useState(initialData);
 
   useEffect(() => {
@@ -96,13 +97,19 @@ const App: React.FC = () => {
     let seed = 0;
     for (let i = 0; i < seedText.length; i++) seed += seedText.charCodeAt(i);
 
-    let element: keyof typeof ELEMENTS = 'FIRE';
-    if (ELEMENTS.EARTH.includes(formData.constellation)) element = 'EARTH';
-    if (ELEMENTS.AIR.includes(formData.constellation)) element = 'AIR';
-    if (ELEMENTS.WATER.includes(formData.constellation)) element = 'WATER';
+    let message = "";
+    if (formData.constellation === "不明") {
+      message = fortuneDatabase.elementMessages.UNKNOWN;
+    } else {
+      let element: keyof typeof fortuneDatabase.elementMessages = 'FIRE';
+      if (ELEMENTS.EARTH.includes(formData.constellation)) element = 'EARTH';
+      if (ELEMENTS.AIR.includes(formData.constellation)) element = 'AIR';
+      if (ELEMENTS.WATER.includes(formData.constellation)) element = 'WATER';
 
-    const bloodKey = formData.bloodType.replace('型', '') as 'A' | 'B' | 'O' | 'AB';
-    const message = (fortuneDatabase.elementMessages[element] as any)[bloodKey] || fortuneDatabase.elementMessages[element].default;
+      const bloodKey = formData.bloodType.replace('型', '') as 'A' | 'B' | 'O' | 'AB';
+      message = (fortuneDatabase.elementMessages[element] as any)[bloodKey] || (fortuneDatabase.elementMessages[element] as any).default;
+    }
+
     const bio = calculateBiorhythm(birthDate, target);
 
     const result = {
@@ -161,9 +168,9 @@ const App: React.FC = () => {
             <h3 className="text-xl font-bold text-cyan-400 mb-6 border-b border-slate-800 pb-2">鑑定マニュアル</h3>
             <ul className="space-y-4 text-sm text-gray-300">
               <li>1. 情報を正確に入力し「運勢を占う」をタップしてください。</li>
-              <li>2. 「入力を固定する」と、高度な解析に基づきあなたの情報を常に優先表示します。</li>
-              <li>3. 他の方を占う際は「他人を占う」をご利用ください。</li>
-              <li>4. 星の配置とバイオリズムを精密に解析し、今日の指針を導き出します。</li>
+              <li>2. 情報が分からない場合は「不明」を選択しても鑑定可能です。</li>
+              <li>3. 「入力を固定する」と、高度な解析に基づきあなたの情報を常に優先表示します。</li>
+              <li>4. 他の方を占う際は「他人を占う」をご利用ください。</li>
             </ul>
             <button onClick={() => setShowManual(false)} className="mt-8 w-full py-3 bg-gradient-to-r from-fuchsia-600 to-cyan-600 rounded-xl font-bold">閉じる</button>
           </div>
@@ -208,9 +215,24 @@ const App: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-3 gap-3 text-xs">
-              <div className="space-y-2"><p className="text-blue-300">血液型</p><select disabled={isLocked} value={formData.bloodType} onChange={(e)=>setFormData({...formData, bloodType: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3"><option>A型</option><option>B型</option><option>O型</option><option>AB型</option></select></div>
-              <div className="space-y-2"><p className="text-blue-300">星座</p><select disabled={isLocked} value={formData.constellation} onChange={(e)=>setFormData({...formData, constellation: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3"><option>牡羊座</option><option>牡牛座</option><option>双子座</option><option>蟹座</option><option>獅子座</option><option>乙女座</option><option>天秤座</option><option>蠍座</option><option>射手座</option><option>山羊座</option><option>水瓶座</option><option>魚座</option></select></div>
-              <div className="space-y-2"><p className="text-blue-300">干支</p><select disabled={isLocked} value={formData.zodiac} onChange={(e)=>setFormData({...formData, zodiac: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3"><option>子</option><option>丑</option><option>寅</option><option>卯</option><option>辰</option><option>巳</option><option>午</option><option>未</option><option>申</option><option>酉</option><option>戌</option><option>亥</option></select></div>
+              <div className="space-y-2">
+                <p className="text-blue-300">血液型</p>
+                <select disabled={isLocked} value={formData.bloodType} onChange={(e)=>setFormData({...formData, bloodType: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3">
+                  <option>不明</option><option>A型</option><option>B型</option><option>O型</option><option>AB型</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <p className="text-blue-300">星座</p>
+                <select disabled={isLocked} value={formData.constellation} onChange={(e)=>setFormData({...formData, constellation: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3">
+                  <option>不明</option><option>牡羊座</option><option>牡牛座</option><option>双子座</option><option>蟹座</option><option>獅子座</option><option>乙女座</option><option>天秤座</option><option>蠍座</option><option>射手座</option><option>山羊座</option><option>水瓶座</option><option>魚座</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <p className="text-blue-300">干支</p>
+                <select disabled={isLocked} value={formData.zodiac} onChange={(e)=>setFormData({...formData, zodiac: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3">
+                  <option>不明</option><option>子</option><option>丑</option><option>寅</option><option>卯</option><option>辰</option><option>巳</option><option>午</option><option>未</option><option>申</option><option>酉</option><option>戌</option><option>亥</option>
+                </select>
+              </div>
             </div>
 
             <div className="flex bg-[#0f172a] rounded-xl p-1 border border-slate-800">
@@ -228,7 +250,6 @@ const App: React.FC = () => {
             </div>
 
             <button onClick={generateFortune} className="w-full py-5 rounded-2xl font-bold text-lg bg-gradient-to-r from-fuchsia-500 to-cyan-500 mt-2 active:scale-95 shadow-lg shadow-fuchsia-500/20">鑑定を開始する</button>
-            <p className="text-center text-gray-500 text-[10px] mt-4 tracking-tighter">天体解析エンジン ver.2.5 稼働中</p>
           </div>
         ) : (
           <div className="space-y-6 animate-in slide-in-from-bottom-10 text-left pb-10">
@@ -248,7 +269,7 @@ const App: React.FC = () => {
             <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-gray-800">
               <h3 className="text-sm font-bold text-white mb-2">精密バイオリズム解析</h3>
               <p className="text-[10px] text-gray-500 mb-6 leading-relaxed">
-                ※生年月日から算出される身体・感情・知性の周期的なリズムです。現在のあなたのコンディションを視覚化しています。
+                ※生年月日から算出される身体・感情・知性の周期的なリズムです。現在のコンディションを視覚化しています。
               </p>
               <div className="space-y-5">
                 {[
@@ -266,7 +287,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* 今週のバイオリズム（復活） */}
+            {/* 今週のバイオリズム */}
             <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-yellow-900/20">
               <h3 className="text-lg font-bold text-yellow-500 mb-6 font-serif italic tracking-tighter">今週のバイオリズム</h3>
               <div className="space-y-4">
@@ -277,14 +298,14 @@ const App: React.FC = () => {
                       {renderStars(idx === 0 ? fortuneResult.stars.total : (idx % 2 === 0 ? 3 : 4))}
                     </div>
                     <p className="text-[12px] text-gray-300 leading-relaxed italic">
-                      {idx === 0 ? fortuneResult.general.substring(0, 35) + "..." : '穏やかな流れです。一歩ずつ丁寧に進むことが開運の鍵となります。'}
+                      {idx === 0 ? fortuneResult.general.substring(0, 35) + "..." : '穏やかな流れです。丁寧な対話が開運の鍵となります。'}
                     </p>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* 本日のラッキー方位 & 情報 */}
+            {/* 本日のラッキー指針 */}
             <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-gray-800">
               <h3 className="text-sm font-bold text-white mb-6">本日のラッキー指針</h3>
               <div className="grid grid-cols-2 gap-4">
@@ -307,7 +328,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* 四大運勢（コメント復活） */}
+            {/* 四大運勢 */}
             <div className="grid grid-cols-2 gap-4">
               {[
                 { label: '金運', star: fortuneResult.stars.money, color: 'text-yellow-500', comm: fortuneResult.comments.money },
