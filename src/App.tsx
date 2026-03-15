@@ -1,165 +1,227 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-// 鑑定データの型定義
-interface Fortune {
-  result: string;
-  supplement: string;
+// 型定義
+interface FortuneDetail {
+  stars: number;
+  text: string;
 }
 
-// サンプルデータ
-const sampleData: Record<string, Fortune[]> = {
-  life: [
-    { result: "あなたの魂が持つ真の才能が、間もなく大きな舞台で輝き始めます。", supplement: "周囲の雑音を気にせず、自分の中にある直感の声に耳を傾けてください。それが唯一の正解です。" },
-    { result: "停滞していた運気が一気に動き出し、理想の未来が手の中に収まる予兆があります。", supplement: "新しい出会いや環境の変化を恐れないでください。そこには想像以上の豊かさが待っています。" }
-  ],
-  work: [
-    { result: "職場であなたの存在感が一段と高まり、重要な役割を任される予兆があります。", supplement: "謙遜せず、自分の才能を信じてください。周囲もあなたの力を必要としています。" },
-    { result: "長年の努力がようやく形になり、目に見える成果として現れるタイミングです。", supplement: "新しいプロジェクトや提案をするなら今がチャンス。直感を信じて行動しましょう。" }
-  ],
-  money: [
-    { result: "思いがけない場所から、豊かさの源泉が見つかる暗示が出ています。", supplement: "無駄を省き、本当に価値のあるものに投資することで、金運はさらに加速します。" },
-    { result: "金運の波が非常に穏やかで安定しています。将来への貯蓄や投資の計画を立てるのに最適です。", supplement: "自分への小さなご褒美が、さらなる良い運気が引き寄せるきっかけになります。" }
-  ]
-};
+interface DailyFortune {
+  date: string;
+  stars: number;
+  text: string;
+}
 
 const App: React.FC = () => {
   const [page, setPage] = useState<'INPUT' | 'RESULT'>('INPUT');
   const [loading, setLoading] = useState(false);
-  const [category, setCategory] = useState<'life' | 'work' | 'money'>('life');
-  const [result, setResult] = useState<Fortune | null>(null);
+  const [targetDate, setTargetDate] = useState<'今日' | '明日'>('今日');
 
-  // 入力データを保持するためのState
+  // 入力データ保持
   const [formData, setFormData] = useState({
-    year: '2018',
-    month: '不明',
-    day: '不明',
-    bloodType: '不明',
-    constellation: '不明',
-    zodiac: '不明'
+    year: '2018', month: '不明', day: '不明',
+    bloodType: '不明', constellation: '不明', zodiac: '不明'
   });
 
-  // 選択肢用のデータ
-  const years = Array.from({ length: 77 }, (_, i) => (1950 + i).toString());
+  // 選択肢データ
+  const years = Array.from({ length: 77 }, (_, i) => (1950 + i).toString()).reverse();
   const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
   const days = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
-  const bloodTypes = ['A型', 'B型', 'O型', 'AB型'];
-  const constellations = ['牡羊座', '牡牛座', '双子座', '蟹座', '獅子座', '乙女座', '天秤座', '蠍座', '射手座', '山羊座', '水瓶座', '魚座'];
-  const zodiacs = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
 
   const handleFortune = () => {
     setLoading(true);
-    const currentData = sampleData[category];
-    const randomIndex = Math.floor(Math.random() * currentData.length);
-    setResult(currentData[randomIndex]);
     setTimeout(() => {
       setLoading(false);
       setPage('RESULT');
-    }, 1500);
+      window.scrollTo(0, 0);
+    }, 1200);
   };
 
-  // 入力変更時の処理
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const renderStars = (count: number) => {
+    return (
+      <div className="flex gap-1">
+        {[...Array(5)].map((_, i) => (
+          <span key={i} className={i < count ? "text-yellow-400" : "text-gray-600"}>★</span>
+        ))}
+      </div>
+    );
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans flex flex-col items-center">
-      <div className="mt-8 mb-12 flex items-center gap-1 text-3xl font-bold">
+    <div className="min-h-screen bg-black text-white font-sans flex flex-col items-center pb-20">
+      {/* ロゴ */}
+      <div className="mt-8 mb-10 flex items-center gap-1 text-3xl font-bold">
         <span className="text-blue-500">m</span><span className="text-green-500">i</span><span className="text-yellow-400">★</span><span className="text-blue-400">k</span><span className="text-purple-500">e</span>
-        <span className="text-xs text-gray-500 self-end mb-1 ml-1 font-normal tracking-tighter">ver.2 Premium</span>
+        <span className="text-xs text-gray-500 self-end mb-1 ml-1 font-normal">ver.2 Premium</span>
       </div>
 
-      <div className="w-full max-w-md px-6 pb-20">
+      <div className="w-full max-w-md px-5">
         {page === 'INPUT' ? (
-          <div className="space-y-8 animate-in fade-in duration-700">
-            <h2 className="text-center text-xl text-blue-100 font-medium">占いたい方の情報を入力して下さい</h2>
+          <div className="space-y-6 animate-in fade-in duration-500">
+            <h2 className="text-center text-xl text-blue-200 font-medium mb-8">占いたい方の情報を入力して下さい</h2>
             
+            {/* 生年月日セクション */}
             <div className="grid grid-cols-3 gap-3 text-xs">
               <div className="space-y-2">
-                <p className="text-gray-400">生年月日</p><p>年</p>
-                <select name="year" value={formData.year} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none focus:border-blue-500">
-                  {years.reverse().map(y => <option key={y} value={y}>{y}</option>)}
+                <p className="text-blue-300">生年月日</p>
+                <p>年</p>
+                <select value={formData.year} onChange={(e)=>setFormData({...formData, year: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-blue-500">
+                  {years.map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
               </div>
               <div className="space-y-2 flex flex-col justify-end">
                 <p>月</p>
-                <select name="month" value={formData.month} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none">
+                <select value={formData.month} onChange={(e)=>setFormData({...formData, month: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
                   <option>不明</option>
                   {months.map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
               </div>
               <div className="space-y-2 flex flex-col justify-end">
                 <p>日</p>
-                <select name="day" value={formData.day} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none">
+                <select value={formData.day} onChange={(e)=>setFormData({...formData, day: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
                   <option>不明</option>
                   {days.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
             </div>
 
+            {/* 属性セクション */}
             <div className="grid grid-cols-3 gap-3 text-xs">
               <div className="space-y-2">
-                <p>血液型</p>
-                <select name="bloodType" value={formData.bloodType} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none">
-                  <option>不明</option>
-                  {bloodTypes.map(b => <option key={b} value={b}>{b}</option>)}
+                <p className="text-blue-300">血液型</p>
+                <select className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
+                  <option>不明</option><option>A型</option><option>B型</option><option>O型</option><option>AB型</option>
                 </select>
               </div>
               <div className="space-y-2">
-                <p>星座</p>
-                <select name="constellation" value={formData.constellation} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none">
-                  <option>不明</option>
-                  {constellations.map(c => <option key={c} value={c}>{c}</option>)}
+                <p className="text-blue-300">星座</p>
+                <select className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
+                  <option>不明</option><option>牡羊座</option><option>牡牛座</option><option>双子座</option><option>蟹座</option><option>獅子座</option><option>乙女座</option><option>天秤座</option><option>蠍座</option><option>射手座</option><option>山羊座</option><option>水瓶座</option><option>魚座</option>
                 </select>
               </div>
               <div className="space-y-2">
-                <p>干支</p>
-                <select name="zodiac" value={formData.zodiac} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none">
-                  <option>不明</option>
-                  {zodiacs.map(z => <option key={z} value={z}>{z}</option>)}
+                <p className="text-blue-300">干支</p>
+                <select className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
+                  <option>不明</option><option>子</option><option>丑</option><option>寅</option><option>卯</option><option>辰</option><option>巳</option><option>午</option><option>未</option><option>申</option><option>酉</option><option>戌</option><option>亥</option>
                 </select>
               </div>
             </div>
 
+            {/* 占う日セクション */}
             <div className="space-y-3">
-              <p className="text-xs">鑑定項目を選択</p>
-              <div className="flex bg-slate-900 rounded-xl p-1 border border-slate-800">
-                {(['life', 'work', 'money'] as const).map((cat) => (
-                  <button key={cat} onClick={() => setCategory(cat)} className={`flex-1 py-3 text-xs rounded-lg transition-all duration-300 ${category === cat ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-lg' : 'text-gray-500'}`}>
-                    {cat === 'life' && '人生'}{cat === 'work' && '仕事'}{cat === 'money' && '金運'}
+              <div className="flex justify-between items-center text-xs">
+                <p className="text-blue-300">占う日</p>
+                <p className="text-cyan-400">本日の残り：∞回</p>
+              </div>
+              <div className="flex bg-[#0f172a] rounded-lg p-1 border border-slate-800">
+                {(['今日', '明日'] as const).map((d) => (
+                  <button key={d} onClick={() => setTargetDate(d)} className={`flex-1 py-3 text-sm rounded-lg transition-all ${targetDate === d ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-500'}`}>
+                    {d}
                   </button>
                 ))}
               </div>
             </div>
 
-            <button onClick={handleFortune} disabled={loading} className={`w-full py-5 rounded-2xl font-bold text-lg transition-all shadow-xl ${loading ? 'opacity-50' : 'bg-gradient-to-r from-[#d946ef] to-[#06b6d4] active:scale-95'}`}>
+            <button onClick={handleFortune} disabled={loading} className={`w-full py-5 rounded-2xl font-bold text-lg transition-all shadow-xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 mt-4 active:scale-95`}>
               {loading ? '星を読み解いています...' : '運勢を占う'}
             </button>
+
+            <p className="text-center text-gray-500 text-xs mt-4">2026/3/15 (今日)</p>
+
+            {/* 鑑定日表示 */}
+            <div className="bg-[#111827] border border-slate-800 p-5 rounded-xl">
+              <p className="text-cyan-400 text-[10px] mb-1 font-bold">鑑定日</p>
+              <p className="text-xl font-bold tracking-widest">2026-03-15</p>
+            </div>
           </div>
         ) : (
-          <div className="space-y-8 animate-in zoom-in-95 duration-700">
-            <div className="bg-[#0d1117] border border-slate-800 p-8 rounded-3xl shadow-2xl relative text-center">
-              <span className="px-4 py-1 rounded-full bg-fuchsia-500/10 text-fuchsia-400 text-[10px] font-bold tracking-widest border border-fuchsia-500/20">PREMIUM FORTUNE</span>
-              <div className="space-y-6 my-12 text-left">
-                <p className="text-xl font-bold leading-relaxed">{result?.result}</p>
-                <p className="text-sm text-gray-400 leading-relaxed border-l-2 border-fuchsia-500 pl-4">{result?.supplement}</p>
+          /* 結果表示画面 */
+          <div className="space-y-6 animate-in slide-in-from-bottom-10 duration-700">
+            <div className="bg-[#111827] border border-slate-800 p-5 rounded-xl">
+              <p className="text-cyan-400 text-[10px] mb-1 font-bold">鑑定日</p>
+              <p className="text-xl font-bold tracking-widest">2026-03-15</p>
+            </div>
+
+            {/* 総合運 */}
+            <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-gray-800">
+              <h3 className="text-lg font-bold mb-3">今日の総合運</h3>
+              <div className="mb-4">{renderStars(5)}</div>
+              <p className="text-sm text-gray-300 leading-relaxed">今日は全体的に前向きな流れです。焦らず進むことで運気が整いやすい日です。</p>
+            </div>
+
+            {/* 開運アクション */}
+            <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-emerald-900/30">
+              <h3 className="text-lg font-bold text-emerald-400 mb-3">今日の開運アクション</h3>
+              <p className="text-sm text-gray-300">今日中に小さな目標を1つ達成する。</p>
+            </div>
+
+            {/* 今日のアドバイス */}
+            <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-gray-800">
+              <h3 className="text-lg font-bold mb-3">今日のアドバイス</h3>
+              <p className="text-sm text-gray-300">今日は一つだけでも前向きな行動を選んでみてください。</p>
+            </div>
+
+            {/* バイオリズム */}
+            <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-yellow-900/20">
+              <h3 className="text-lg font-bold text-yellow-500 mb-6 font-serif italic">今週のバイオリズム</h3>
+              <div className="space-y-4">
+                {[
+                  { d: '2026-03-15', s: 5, t: '前向きな流れが強い日です。人との交流が幸運につながります。' },
+                  { d: '2026-03-16', s: 2, t: '少し運気が低調です。休息を意識しましょう。' },
+                  { d: '2026-03-17', s: 3, t: '穏やかな流れです。焦らず丁寧に進めましょう。' },
+                  { d: '2026-03-18', s: 4, t: '良い流れに乗りやすい日です。周囲との協力が鍵になります。' },
+                  { d: '2026-03-19', s: 5, t: 'エネルギーに満ち溢れています。挑戦を楽しみましょう。' },
+                ].map((item, idx) => (
+                  <div key={idx} className="bg-black/40 p-4 rounded-xl border border-gray-800">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs text-gray-400 font-mono">{item.d}</span>
+                      {renderStars(item.s)}
+                    </div>
+                    <p className="text-[13px] text-gray-300">{item.t}</p>
+                  </div>
+                ))}
               </div>
-              <div className="border-t border-slate-800/50 pt-8 text-[13px] text-gray-400 italic">
-                新しい出会いはプロフィールのリンクから。未来を明るくしてくれる人と、今度こそ出会いましょう！
+              <p className="text-[10px] text-gray-600 mt-6 italic">※毎日の運勢の波を示したものです。行動の参考としてお役立てください</p>
+            </div>
+
+            {/* 4つの運勢カード */}
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { label: '金運', s: 1, t: '必要なものを見極めると金運が安定します。' },
+                { label: '健康運', s: 2, t: '軽い運動が心身のバランスを整えてくれます。' },
+                { label: '恋愛運', s: 3, t: '焦らず穏やかに向き合うことで関係が深まりやすいです。' },
+                { label: '仕事運', s: 4, t: '今日は地道な努力が実りやすい日です。' }
+              ].map((item, idx) => (
+                <div key={idx} className="bg-[#1e1e1e] p-4 rounded-2xl border border-gray-800">
+                  <p className="font-bold mb-2">{item.label}</p>
+                  <div className="mb-2 text-xs">{renderStars(item.s)}</div>
+                  <p className="text-[11px] text-gray-400 leading-tight">{item.t}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* ラッキー情報 */}
+            <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-gray-800">
+              <h3 className="text-lg font-bold mb-6">ラッキー情報</h3>
+              <div className="space-y-3">
+                <div className="bg-black/40 p-4 rounded-xl text-sm"><span className="text-fuchsia-400 font-bold">ラッキーアイテム：</span> お気に入りのペン</div>
+                <div className="bg-black/40 p-4 rounded-xl text-sm"><span className="text-cyan-400 font-bold">ラッキーカラー：</span> ピンク</div>
+                <div className="bg-black/40 p-4 rounded-xl text-sm"><span className="text-emerald-400 font-bold">ラッキーナンバー：</span> 8</div>
               </div>
             </div>
-            <button onClick={() => setPage('INPUT')} className="w-full py-4 text-gray-500 text-sm">← 情報を修正してもう一度占う</button>
+
+            <button onClick={() => setPage('INPUT')} className="w-full py-10 text-gray-500 text-sm hover:text-white transition-colors">
+              ← 条件を変えてもう一度占う
+            </button>
+
+            <div className="border-t border-slate-800/50 pt-8 text-center text-[13px] text-gray-400 italic px-4">
+              新しい出会いはプロフィールのリンクから。未来を明るくしてくれる人と、今度こそ出会いましょう！
+            </div>
             <div className="flex flex-wrap justify-center gap-3 text-[10px] text-fuchsia-500/50 font-medium">
               <span>#相性占い</span> <span>#特別鑑定</span> <span>#恋愛相談</span> <span>#運命の出会い</span> <span>#恋愛成就</span>
             </div>
           </div>
         )}
-
-        <div className="mt-12 bg-[#0d1117] border border-slate-800 p-6 rounded-2xl text-center text-cyan-400">
-          <p className="text-[10px] mb-2 tracking-widest font-bold uppercase">Reading Date</p>
-          <p className="text-2xl font-bold tracking-widest text-white">2026-03-15</p>
-        </div>
       </div>
     </div>
   );
