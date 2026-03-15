@@ -1,13 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 // 型定義
 interface FortuneDetail {
-  stars: number;
-  text: string;
-}
-
-interface DailyFortune {
-  date: string;
   stars: number;
   text: string;
 }
@@ -19,7 +13,7 @@ const App: React.FC = () => {
 
   // 入力データ保持
   const [formData, setFormData] = useState({
-    year: '2018', month: '不明', day: '不明',
+    year: '1980', month: '1', day: '1',
     bloodType: '不明', constellation: '不明', zodiac: '不明'
   });
 
@@ -52,13 +46,13 @@ const App: React.FC = () => {
       {/* ロゴ */}
       <div className="mt-8 mb-10 flex items-center gap-1 text-3xl font-bold">
         <span className="text-blue-500">m</span><span className="text-green-500">i</span><span className="text-yellow-400">★</span><span className="text-blue-400">k</span><span className="text-purple-500">e</span>
-        <span className="text-xs text-gray-500 self-end mb-1 ml-1 font-normal">ver.2 Premium</span>
+        <span className="text-xs text-gray-500 self-end mb-1 ml-1 font-normal tracking-tighter">ver.2 Premium</span>
       </div>
 
       <div className="w-full max-w-md px-5">
         {page === 'INPUT' ? (
           <div className="space-y-6 animate-in fade-in duration-500">
-            <h2 className="text-center text-xl text-blue-200 font-medium mb-8">占いたい方の情報を入力して下さい</h2>
+            <h2 className="text-center text-xl text-blue-100 font-medium mb-8">占いたい方の情報を入力して下さい</h2>
             
             {/* 生年月日セクション */}
             <div className="grid grid-cols-3 gap-3 text-xs">
@@ -89,19 +83,19 @@ const App: React.FC = () => {
             <div className="grid grid-cols-3 gap-3 text-xs">
               <div className="space-y-2">
                 <p className="text-blue-300">血液型</p>
-                <select className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
+                <select value={formData.bloodType} onChange={(e)=>setFormData({...formData, bloodType: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
                   <option>不明</option><option>A型</option><option>B型</option><option>O型</option><option>AB型</option>
                 </select>
               </div>
               <div className="space-y-2">
                 <p className="text-blue-300">星座</p>
-                <select className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
+                <select value={formData.constellation} onChange={(e)=>setFormData({...formData, constellation: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
                   <option>不明</option><option>牡羊座</option><option>牡牛座</option><option>双子座</option><option>蟹座</option><option>獅子座</option><option>乙女座</option><option>天秤座</option><option>蠍座</option><option>射手座</option><option>山羊座</option><option>水瓶座</option><option>魚座</option>
                 </select>
               </div>
               <div className="space-y-2">
                 <p className="text-blue-300">干支</p>
-                <select className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
+                <select value={formData.zodiac} onChange={(e)=>setFormData({...formData, zodiac: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
                   <option>不明</option><option>子</option><option>丑</option><option>寅</option><option>卯</option><option>辰</option><option>巳</option><option>午</option><option>未</option><option>申</option><option>酉</option><option>戌</option><option>亥</option>
                 </select>
               </div>
@@ -109,10 +103,7 @@ const App: React.FC = () => {
 
             {/* 占う日セクション */}
             <div className="space-y-3">
-              <div className="flex justify-between items-center text-xs">
-                <p className="text-blue-300">占う日</p>
-                <p className="text-cyan-400">本日の残り：∞回</p>
-              </div>
+              <p className="text-blue-300 text-xs">占う日</p>
               <div className="flex bg-[#0f172a] rounded-lg p-1 border border-slate-800">
                 {(['今日', '明日'] as const).map((d) => (
                   <button key={d} onClick={() => setTargetDate(d)} className={`flex-1 py-3 text-sm rounded-lg transition-all ${targetDate === d ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-500'}`}>
@@ -122,7 +113,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <button onClick={handleFortune} disabled={loading} className={`w-full py-5 rounded-2xl font-bold text-lg transition-all shadow-xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 mt-4 active:scale-95`}>
+            <button onClick={handleFortune} disabled={loading} className={`w-full py-5 rounded-2xl font-bold text-lg transition-all shadow-xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 mt-4 active:scale-95 tracking-widest`}>
               {loading ? '星を読み解いています...' : '運勢を占う'}
             </button>
 
@@ -130,15 +121,15 @@ const App: React.FC = () => {
 
             {/* 鑑定日表示 */}
             <div className="bg-[#111827] border border-slate-800 p-5 rounded-xl">
-              <p className="text-cyan-400 text-[10px] mb-1 font-bold">鑑定日</p>
+              <p className="text-cyan-400 text-[10px] mb-1 font-bold tracking-widest uppercase">Reading Date</p>
               <p className="text-xl font-bold tracking-widest">2026-03-15</p>
             </div>
           </div>
         ) : (
           /* 結果表示画面 */
           <div className="space-y-6 animate-in slide-in-from-bottom-10 duration-700">
-            <div className="bg-[#111827] border border-slate-800 p-5 rounded-xl">
-              <p className="text-cyan-400 text-[10px] mb-1 font-bold">鑑定日</p>
+            <div className="bg-[#111827] border border-slate-800 p-5 rounded-xl text-center">
+              <p className="text-cyan-400 text-[10px] mb-1 font-bold tracking-widest uppercase">Reading Date</p>
               <p className="text-xl font-bold tracking-widest">2026-03-15</p>
             </div>
 
@@ -163,7 +154,7 @@ const App: React.FC = () => {
 
             {/* バイオリズム */}
             <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-yellow-900/20">
-              <h3 className="text-lg font-bold text-yellow-500 mb-6 font-serif italic">今週のバイオリズム</h3>
+              <h3 className="text-lg font-bold text-yellow-500 mb-6 font-serif italic tracking-tighter">今週のバイオリズム</h3>
               <div className="space-y-4">
                 {[
                   { d: '2026-03-15', s: 5, t: '前向きな流れが強い日です。人との交流が幸運につながります。' },
@@ -177,7 +168,7 @@ const App: React.FC = () => {
                       <span className="text-xs text-gray-400 font-mono">{item.d}</span>
                       {renderStars(item.s)}
                     </div>
-                    <p className="text-[13px] text-gray-300">{item.t}</p>
+                    <p className="text-[13px] text-gray-300 leading-relaxed">{item.t}</p>
                   </div>
                 ))}
               </div>
@@ -210,14 +201,15 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <button onClick={() => setPage('INPUT')} className="w-full py-10 text-gray-500 text-sm hover:text-white transition-colors">
-              ← 条件を変えてもう一度占う
+            {/* 戻るボタン */}
+            <button onClick={() => setPage('INPUT')} className="w-full py-10 text-gray-500 text-sm hover:text-white transition-colors tracking-widest">
+              ← 戻る
             </button>
 
-            <div className="border-t border-slate-800/50 pt-8 text-center text-[13px] text-gray-400 italic px-4">
+            <div className="border-t border-slate-800/50 pt-8 text-center text-[13px] text-gray-400 italic px-4 leading-relaxed">
               新しい出会いはプロフィールのリンクから。未来を明るくしてくれる人と、今度こそ出会いましょう！
             </div>
-            <div className="flex flex-wrap justify-center gap-3 text-[10px] text-fuchsia-500/50 font-medium">
+            <div className="flex flex-wrap justify-center gap-3 text-[10px] text-fuchsia-500/50 font-medium pb-10">
               <span>#相性占い</span> <span>#特別鑑定</span> <span>#恋愛相談</span> <span>#運命の出会い</span> <span>#恋愛成就</span>
             </div>
           </div>
