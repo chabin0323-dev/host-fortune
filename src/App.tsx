@@ -18,7 +18,7 @@ const sampleData: Record<string, Fortune[]> = {
   ],
   money: [
     { result: "思いがけない場所から、豊かさの源泉が見つかる暗示が出ています。", supplement: "無駄を省き、本当に価値のあるものに投資することで、金運はさらに加速します。" },
-    { result: "金運の波が非常に穏やかで安定しています。将来への貯蓄や投資の計画を立てるのに最適です。", supplement: "自分への小さなご褒美が、さらなる良い運気を引き寄せるきっかけになります。" }
+    { result: "金運の波が非常に穏やかで安定しています。将来への貯蓄や投資の計画を立てるのに最適です。", supplement: "自分への小さなご褒美が、さらなる良い運気が引き寄せるきっかけになります。" }
   ]
 };
 
@@ -27,6 +27,16 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState<'life' | 'work' | 'money'>('life');
   const [result, setResult] = useState<Fortune | null>(null);
+
+  // 入力データを保持するためのState
+  const [formData, setFormData] = useState({
+    year: '2018',
+    month: '不明',
+    day: '不明',
+    bloodType: '不明',
+    constellation: '不明',
+    zodiac: '不明'
+  });
 
   // 選択肢用のデータ
   const years = Array.from({ length: 77 }, (_, i) => (1950 + i).toString());
@@ -47,6 +57,12 @@ const App: React.FC = () => {
     }, 1500);
   };
 
+  // 入力変更時の処理
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
   return (
     <div className="min-h-screen bg-black text-white font-sans flex flex-col items-center">
       <div className="mt-8 mb-12 flex items-center gap-1 text-3xl font-bold">
@@ -62,20 +78,20 @@ const App: React.FC = () => {
             <div className="grid grid-cols-3 gap-3 text-xs">
               <div className="space-y-2">
                 <p className="text-gray-400">生年月日</p><p>年</p>
-                <select className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none focus:border-blue-500">
+                <select name="year" value={formData.year} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none focus:border-blue-500">
                   {years.reverse().map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
               </div>
               <div className="space-y-2 flex flex-col justify-end">
                 <p>月</p>
-                <select className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none">
+                <select name="month" value={formData.month} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none">
                   <option>不明</option>
                   {months.map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
               </div>
               <div className="space-y-2 flex flex-col justify-end">
                 <p>日</p>
-                <select className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none">
+                <select name="day" value={formData.day} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none">
                   <option>不明</option>
                   {days.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
@@ -85,21 +101,21 @@ const App: React.FC = () => {
             <div className="grid grid-cols-3 gap-3 text-xs">
               <div className="space-y-2">
                 <p>血液型</p>
-                <select className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none">
+                <select name="bloodType" value={formData.bloodType} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none">
                   <option>不明</option>
                   {bloodTypes.map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
               <div className="space-y-2">
                 <p>星座</p>
-                <select className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none">
+                <select name="constellation" value={formData.constellation} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none">
                   <option>不明</option>
                   {constellations.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div className="space-y-2">
                 <p>干支</p>
-                <select className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none">
+                <select name="zodiac" value={formData.zodiac} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 outline-none">
                   <option>不明</option>
                   {zodiacs.map(z => <option key={z} value={z}>{z}</option>)}
                 </select>
@@ -110,7 +126,7 @@ const App: React.FC = () => {
               <p className="text-xs">鑑定項目を選択</p>
               <div className="flex bg-slate-900 rounded-xl p-1 border border-slate-800">
                 {(['life', 'work', 'money'] as const).map((cat) => (
-                  <button key={cat} onClick={() => setCategory(cat)} className={`flex-1 py-3 text-xs rounded-lg transition-all duration-300 ${category === cat ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white' : 'text-gray-500'}`}>
+                  <button key={cat} onClick={() => setCategory(cat)} className={`flex-1 py-3 text-xs rounded-lg transition-all duration-300 ${category === cat ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-lg' : 'text-gray-500'}`}>
                     {cat === 'life' && '人生'}{cat === 'work' && '仕事'}{cat === 'money' && '金運'}
                   </button>
                 ))}
@@ -133,7 +149,7 @@ const App: React.FC = () => {
                 新しい出会いはプロフィールのリンクから。未来を明るくしてくれる人と、今度こそ出会いましょう！
               </div>
             </div>
-            <button onClick={() => setPage('INPUT')} className="w-full py-4 text-gray-500 text-sm">← 戻る</button>
+            <button onClick={() => setPage('INPUT')} className="w-full py-4 text-gray-500 text-sm">← 情報を修正してもう一度占う</button>
             <div className="flex flex-wrap justify-center gap-3 text-[10px] text-fuchsia-500/50 font-medium">
               <span>#相性占い</span> <span>#特別鑑定</span> <span>#恋愛相談</span> <span>#運命の出会い</span> <span>#恋愛成就</span>
             </div>
