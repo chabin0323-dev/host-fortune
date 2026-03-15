@@ -6,7 +6,6 @@ const App: React.FC = () => {
   const [targetDate, setTargetDate] = useState<'今日' | '明日'>('今日');
   const [isLocked, setIsLocked] = useState(false);
 
-  // 初期データ
   const initialData = {
     year: '1980', month: '1', day: '1',
     bloodType: '不明', constellation: '不明', zodiac: '不明'
@@ -14,7 +13,6 @@ const App: React.FC = () => {
 
   const [formData, setFormData] = useState(initialData);
 
-  // 起動時に保存されたデータがあるか確認
   useEffect(() => {
     const saved = localStorage.getItem('fortune_fixed_data');
     if (saved) {
@@ -23,22 +21,18 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // 固定機能
   const handleLock = () => {
     localStorage.setItem('fortune_fixed_data', JSON.stringify(formData));
     setIsLocked(true);
   };
 
-  // 解除機能
   const handleUnlock = () => {
     localStorage.removeItem('fortune_fixed_data');
     setIsLocked(false);
   };
 
-  // 他人を占う（一時リセット）
   const handleResetForOther = () => {
     setFormData(initialData);
-    // ロック状態は維持（localStorageには元の本人のデータが残っている）が、画面上は入力可能にする
     setIsLocked(false); 
   };
 
@@ -48,11 +42,12 @@ const App: React.FC = () => {
 
   const handleFortune = () => {
     setLoading(true);
+    // 2秒間の神秘的な演出時間を設定
     setTimeout(() => {
       setLoading(false);
       setPage('RESULT');
       window.scrollTo(0, 0);
-    }, 1200);
+    }, 2000);
   };
 
   const renderStars = (count: number) => (
@@ -64,14 +59,26 @@ const App: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans flex flex-col items-center pb-20">
+    <div className="min-h-screen bg-black text-white font-sans flex flex-col items-center pb-20 overflow-x-hidden">
       <div className="mt-8 mb-10 flex items-center gap-1 text-3xl font-bold">
         <span className="text-blue-500">m</span><span className="text-green-500">i</span><span className="text-yellow-400">★</span><span className="text-blue-400">k</span><span className="text-purple-500">e</span>
         <span className="text-xs text-gray-500 self-end mb-1 ml-1 font-normal tracking-tighter">ver.2 Premium</span>
       </div>
 
       <div className="w-full max-w-md px-5">
-        {page === 'INPUT' ? (
+        {loading ? (
+          /* 神秘的なローディング演出 */
+          <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in duration-700">
+            <div className="relative w-24 h-24">
+              <div className="absolute inset-0 border-4 border-fuchsia-500/20 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-t-cyan-400 rounded-full animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center text-4xl animate-pulse text-yellow-400">
+                ★
+              </div>
+            </div>
+            <p className="mt-8 text-cyan-400 tracking-[0.2em] font-light animate-pulse">運命の糸を読み解いています...</p>
+          </div>
+        ) : page === 'INPUT' ? (
           <div className="space-y-6 animate-in fade-in duration-500">
             <h2 className="text-center text-xl text-blue-100 font-medium mb-8">占いたい方の情報を入力して下さい</h2>
             
@@ -131,7 +138,6 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* 固定ボタンエリア */}
             <div className="flex justify-end gap-2 pt-2">
               {!isLocked ? (
                 <button onClick={handleLock} className="bg-[#2c3748] hover:bg-[#3d4b5f] text-gray-200 text-xs py-2.5 px-6 rounded-lg transition-colors border border-slate-700">
@@ -149,8 +155,8 @@ const App: React.FC = () => {
               )}
             </div>
 
-            <button onClick={handleFortune} disabled={loading} className={`w-full py-5 rounded-2xl font-bold text-lg transition-all shadow-xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 mt-2 active:scale-95 tracking-widest`}>
-              {loading ? '星を読み解いています...' : '運勢を占う'}
+            <button onClick={handleFortune} className="w-full py-5 rounded-2xl font-bold text-lg transition-all shadow-xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 mt-2 active:scale-95 tracking-widest">
+              運勢を占う
             </button>
           </div>
         ) : (
@@ -176,6 +182,7 @@ const App: React.FC = () => {
               <p className="text-sm text-gray-300">今日は一つだけでも前向きな行動を選んでみてください。</p>
             </div>
 
+            {/* 今週のバイオリズム（7日分に拡張） */}
             <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-yellow-900/20">
               <h3 className="text-lg font-bold text-yellow-500 mb-6 font-serif italic tracking-tighter">今週のバイオリズム</h3>
               <div className="space-y-4">
@@ -183,6 +190,10 @@ const App: React.FC = () => {
                   { d: '2026-03-15', s: 5, t: '前向きな流れが強い日です。人との交流が幸運につながります。' },
                   { d: '2026-03-16', s: 2, t: '少し運気が低調です。休息を意識しましょう。' },
                   { d: '2026-03-17', s: 3, t: '穏やかな流れです。焦らず丁寧に進めましょう。' },
+                  { d: '2026-03-18', s: 4, t: '良い流れに乗りやすい日です。周囲との協力が鍵になります。' },
+                  { d: '2026-03-19', s: 5, t: 'エネルギーに満ち溢れています。挑戦を楽しみましょう。' },
+                  { d: '2026-03-20', s: 3, t: '内面の整理に適した日。自分自身を労わってください。' },
+                  { d: '2026-03-21', s: 4, t: '新しいアイデアが湧く予感。メモを取ることを忘れずに。' },
                 ].map((item, idx) => (
                   <div key={idx} className="bg-black/40 p-4 rounded-xl border border-gray-800">
                     <div className="flex justify-between items-center mb-2">
