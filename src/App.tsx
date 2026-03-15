@@ -1,17 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const App: React.FC = () => {
   const [page, setPage] = useState<'INPUT' | 'RESULT'>('INPUT');
   const [loading, setLoading] = useState(false);
   const [targetDate, setTargetDate] = useState<'今日' | '明日'>('今日');
+  const [isLocked, setIsLocked] = useState(false);
 
-  // 入力データ保持
-  const [formData, setFormData] = useState({
+  // 初期データ
+  const initialData = {
     year: '1980', month: '1', day: '1',
     bloodType: '不明', constellation: '不明', zodiac: '不明'
-  });
+  };
 
-  // 選択肢データ
+  const [formData, setFormData] = useState(initialData);
+
+  // 起動時に保存されたデータがあるか確認
+  useEffect(() => {
+    const saved = localStorage.getItem('fortune_fixed_data');
+    if (saved) {
+      setFormData(JSON.parse(saved));
+      setIsLocked(true);
+    }
+  }, []);
+
+  // 固定機能
+  const handleLock = () => {
+    localStorage.setItem('fortune_fixed_data', JSON.stringify(formData));
+    setIsLocked(true);
+  };
+
+  // 解除機能
+  const handleUnlock = () => {
+    localStorage.removeItem('fortune_fixed_data');
+    setIsLocked(false);
+  };
+
+  // 他人を占う（一時リセット）
+  const handleResetForOther = () => {
+    setFormData(initialData);
+    // ロック状態は維持（localStorageには元の本人のデータが残っている）が、画面上は入力可能にする
+    setIsLocked(false); 
+  };
+
   const years = Array.from({ length: 77 }, (_, i) => (1950 + i).toString()).reverse();
   const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
   const days = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
@@ -25,19 +55,16 @@ const App: React.FC = () => {
     }, 1200);
   };
 
-  const renderStars = (count: number) => {
-    return (
-      <div className="flex gap-1">
-        {[...Array(5)].map((_, i) => (
-          <span key={i} className={i < count ? "text-yellow-400" : "text-gray-600"}>★</span>
-        ))}
-      </div>
-    );
-  };
+  const renderStars = (count: number) => (
+    <div className="flex gap-1">
+      {[...Array(5)].map((_, i) => (
+        <span key={i} className={i < count ? "text-yellow-400" : "text-gray-600"}>★</span>
+      ))}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-black text-white font-sans flex flex-col items-center pb-20">
-      {/* ロゴ */}
       <div className="mt-8 mb-10 flex items-center gap-1 text-3xl font-bold">
         <span className="text-blue-500">m</span><span className="text-green-500">i</span><span className="text-yellow-400">★</span><span className="text-blue-400">k</span><span className="text-purple-500">e</span>
         <span className="text-xs text-gray-500 self-end mb-1 ml-1 font-normal tracking-tighter">ver.2 Premium</span>
@@ -52,20 +79,20 @@ const App: React.FC = () => {
               <div className="space-y-2">
                 <p className="text-blue-300">生年月日</p>
                 <p>年</p>
-                <select value={formData.year} onChange={(e)=>setFormData({...formData, year: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-blue-500">
+                <select disabled={isLocked} value={formData.year} onChange={(e)=>setFormData({...formData, year: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none focus:border-blue-500 disabled:opacity-50">
                   {years.map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
               </div>
               <div className="space-y-2 flex flex-col justify-end">
                 <p>月</p>
-                <select value={formData.month} onChange={(e)=>setFormData({...formData, month: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
+                <select disabled={isLocked} value={formData.month} onChange={(e)=>setFormData({...formData, month: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none disabled:opacity-50">
                   <option>不明</option>
                   {months.map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
               </div>
               <div className="space-y-2 flex flex-col justify-end">
                 <p>日</p>
-                <select value={formData.day} onChange={(e)=>setFormData({...formData, day: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
+                <select disabled={isLocked} value={formData.day} onChange={(e)=>setFormData({...formData, day: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none disabled:opacity-50">
                   <option>不明</option>
                   {days.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
@@ -75,19 +102,19 @@ const App: React.FC = () => {
             <div className="grid grid-cols-3 gap-3 text-xs">
               <div className="space-y-2">
                 <p className="text-blue-300">血液型</p>
-                <select value={formData.bloodType} onChange={(e)=>setFormData({...formData, bloodType: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
+                <select disabled={isLocked} value={formData.bloodType} onChange={(e)=>setFormData({...formData, bloodType: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none disabled:opacity-50">
                   <option>不明</option><option>A型</option><option>B型</option><option>O型</option><option>AB型</option>
                 </select>
               </div>
               <div className="space-y-2">
                 <p className="text-blue-300">星座</p>
-                <select value={formData.constellation} onChange={(e)=>setFormData({...formData, constellation: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
+                <select disabled={isLocked} value={formData.constellation} onChange={(e)=>setFormData({...formData, constellation: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none disabled:opacity-50">
                   <option>不明</option><option>牡羊座</option><option>牡牛座</option><option>双子座</option><option>蟹座</option><option>獅子座</option><option>乙女座</option><option>天秤座</option><option>蠍座</option><option>射手座</option><option>山羊座</option><option>水瓶座</option><option>魚座</option>
                 </select>
               </div>
               <div className="space-y-2">
                 <p className="text-blue-300">干支</p>
-                <select value={formData.zodiac} onChange={(e)=>setFormData({...formData, zodiac: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none">
+                <select disabled={isLocked} value={formData.zodiac} onChange={(e)=>setFormData({...formData, zodiac: e.target.value})} className="w-full bg-[#0f172a] border border-slate-800 rounded-lg p-3 outline-none disabled:opacity-50">
                   <option>不明</option><option>子</option><option>丑</option><option>寅</option><option>卯</option><option>辰</option><option>巳</option><option>午</option><option>未</option><option>申</option><option>酉</option><option>戌</option><option>亥</option>
                 </select>
               </div>
@@ -104,33 +131,35 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* 入力を固定するボタンの追加 */}
-            <div className="flex justify-end pt-2">
-              <button className="bg-[#2c3748] hover:bg-[#3d4b5f] text-gray-200 text-xs py-2.5 px-6 rounded-lg transition-colors border border-slate-700">
-                入力を固定する
-              </button>
+            {/* 固定ボタンエリア */}
+            <div className="flex justify-end gap-2 pt-2">
+              {!isLocked ? (
+                <button onClick={handleLock} className="bg-[#2c3748] hover:bg-[#3d4b5f] text-gray-200 text-xs py-2.5 px-6 rounded-lg transition-colors border border-slate-700">
+                  入力を固定する
+                </button>
+              ) : (
+                <>
+                  <button onClick={handleUnlock} className="bg-red-900/30 hover:bg-red-900/50 text-red-200 text-xs py-2.5 px-4 rounded-lg transition-colors border border-red-800/50">
+                    固定を解除
+                  </button>
+                  <button onClick={handleResetForOther} className="bg-[#2c3748] hover:bg-[#3d4b5f] text-gray-200 text-xs py-2.5 px-4 rounded-lg transition-colors border border-slate-700">
+                    他人を占う
+                  </button>
+                </>
+              )}
             </div>
 
             <button onClick={handleFortune} disabled={loading} className={`w-full py-5 rounded-2xl font-bold text-lg transition-all shadow-xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 mt-2 active:scale-95 tracking-widest`}>
               {loading ? '星を読み解いています...' : '運勢を占う'}
             </button>
-
-            <p className="text-center text-gray-500 text-xs mt-4">2026/3/15 (今日)</p>
-
-            <div className="bg-[#111827] border border-slate-800 p-5 rounded-xl">
-              <p className="text-cyan-400 text-[10px] mb-1 font-bold tracking-widest uppercase">Reading Date</p>
-              <p className="text-xl font-bold tracking-widest">2026-03-15</p>
-            </div>
           </div>
         ) : (
-          /* 結果表示画面 */
           <div className="space-y-6 animate-in slide-in-from-bottom-10 duration-700">
             <div className="bg-[#111827] border border-slate-800 p-5 rounded-xl text-center">
               <p className="text-cyan-400 text-[10px] mb-1 font-bold tracking-widest uppercase">Reading Date</p>
               <p className="text-xl font-bold tracking-widest">2026-03-15</p>
             </div>
 
-            {/* 各運勢コンテンツ（省略せず以前のまま保持） */}
             <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-gray-800">
               <h3 className="text-lg font-bold mb-3">今日の総合運</h3>
               <div className="mb-4">{renderStars(5)}</div>
@@ -147,7 +176,6 @@ const App: React.FC = () => {
               <p className="text-sm text-gray-300">今日は一つだけでも前向きな行動を選んでみてください。</p>
             </div>
 
-            {/* バイオリズム */}
             <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-yellow-900/20">
               <h3 className="text-lg font-bold text-yellow-500 mb-6 font-serif italic tracking-tighter">今週のバイオリズム</h3>
               <div className="space-y-4">
@@ -167,7 +195,6 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* ラッキー情報等...（コードの長さ節約のため一部中略しますが、お手元のファイルでは全項目維持してください） */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-[#1e1e1e] p-4 rounded-2xl border border-gray-800">
                 <p className="font-bold mb-2">金運</p>
@@ -181,21 +208,19 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* お洒落な戻るボタンへの変更 */}
-            <div className="pt-6 pb-4">
-              <button 
-                onClick={() => setPage('INPUT')} 
-                className="w-full py-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white transition-all text-sm tracking-widest font-medium"
-              >
-                ← 戻って入力をやり直す
-              </button>
+            <div className="bg-[#1e1e1e] p-6 rounded-2xl border border-gray-800">
+              <h3 className="text-lg font-bold mb-6">ラッキー情報</h3>
+              <div className="space-y-3">
+                <div className="bg-black/40 p-4 rounded-xl text-sm"><span className="text-fuchsia-400 font-bold">ラッキーアイテム：</span> お気に入りのペン</div>
+                <div className="bg-black/40 p-4 rounded-xl text-sm"><span className="text-cyan-400 font-bold">ラッキーカラー：</span> ピンク</div>
+                <div className="bg-black/40 p-4 rounded-xl text-sm"><span className="text-emerald-400 font-bold">ラッキーナンバー：</span> 8</div>
+              </div>
             </div>
 
-            <div className="border-t border-slate-800/50 pt-8 text-center text-[13px] text-gray-400 italic px-4 leading-relaxed">
-              新しい出会いはプロフィールのリンクから。未来を明るくしてくれる人と、今度こそ出会いましょう！
-            </div>
-            <div className="flex flex-wrap justify-center gap-3 text-[10px] text-fuchsia-500/50 font-medium pb-10">
-              <span>#相性占い</span> <span>#特別鑑定</span> <span>#恋愛相談</span> <span>#運命の出会い</span> <span>#恋愛成就</span>
+            <div className="pt-6 pb-10">
+              <button onClick={() => setPage('INPUT')} className="w-full py-4 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-all text-sm tracking-widest font-medium">
+                ← 戻って入力をやり直す
+              </button>
             </div>
           </div>
         )}
