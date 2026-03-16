@@ -95,37 +95,36 @@ const App: React.FC = () => {
 
       const birthBase = (yVal === '不明') ? new Date(2000, 0, 1) : new Date(`${yVal}-${mVal === '不明' ? '01' : mVal.padStart(2,'0')}-${dVal === '不明' ? '01' : dVal.padStart(2,'0')}`);
       
+      // ★星が1〜5個まで確実に分布するように計算式を修正
+      const getBalancedStar = (seedValue: number) => {
+        const result = (seedValue % 5) + 1; // 1, 2, 3, 4, 5 のいずれかを必ず返す
+        return result;
+      };
+
       const getStarByDate = (t: Date, offsetIdx: number = 0) => {
         const diff = Math.floor((t.getTime() - birthBase.getTime()) / (24 * 60 * 60 * 1000));
-        // ★週間バイオリズムで必ず星3,4,5が混ざるように分布を固定せず揺らす
-        const hash = (totalSeed + offsetIdx * 23 + diff) % 100;
-        if (offsetIdx === 0) { // 今日の分は従来通りのメイン判定
-          if (hash < 15) return 1; if (hash < 30) return 2; if (hash < 55) return 3; if (hash < 80) return 4; return 5;
-        } else { // 週間予測は星3〜5が必ず入るように重みを調整
-          const weekHash = (hash + offsetIdx * 7) % 3; // 0, 1, 2のいずれか
-          return weekHash + 3; // 必ず星3, 4, 5のいずれかになる
-        }
+        // offsetごとに異なる星が出るように調整
+        return getBalancedStar(totalSeed + offsetIdx * 17 + diff);
       };
       
       const mainStar = getStarByDate(baseDate, 0);
-
-      const getSyncStar = (seedOffset: number) => {
-        const variance = (totalSeed + seedOffset) % 2;
-        const base = mainStar === 1 ? 1 : mainStar === 5 ? 4 : mainStar - 1;
-        return Math.max(1, Math.min(5, base + variance));
-      };
-
-      const s_money = getSyncStar(1);
-      const s_health = getSyncStar(2);
-      const s_love = getSyncStar(3);
-      const s_work = getSyncStar(4);
 
       const dayLabels = ['日', '月', '火', '水', '木', '金', '土'];
       const weekly = Array.from({ length: 7 }, (_, idx) => {
         const d = new Date(baseDate);
         d.setDate(baseDate.getDate() + idx);
-        return { date: `${d.getMonth() + 1}/${d.getDate()}`, day: dayLabels[d.getDay()], star: getStarByDate(d, idx) };
+        return { 
+          date: `${d.getMonth() + 1}/${d.getDate()}`, 
+          day: dayLabels[d.getDay()], 
+          star: getStarByDate(d, idx) 
+        };
       });
+
+      // ★4大運勢も星1〜5がバラけるように調整
+      const s_money = getBalancedStar(totalSeed + 101);
+      const s_health = getBalancedStar(totalSeed + 202);
+      const s_love = getBalancedStar(totalSeed + 303);
+      const s_work = getBalancedStar(totalSeed + 404);
 
       setFortuneResult({
         dateStr: `${baseDate.getFullYear()}年${(baseDate.getMonth() + 1)}月${baseDate.getDate()}日`,
@@ -155,6 +154,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black text-white font-sans flex flex-col items-center pb-20 relative text-center">
+      
       {errorMsg && (
         <div className="fixed top-24 left-0 w-full z-[100] px-6 pointer-events-none">
           <div className="bg-red-600 text-white px-4 py-4 rounded-2xl shadow-2xl font-bold animate-bounce text-sm mx-auto max-w-xs pointer-events-auto leading-normal">
@@ -225,6 +225,17 @@ const App: React.FC = () => {
           </div>
         )}
       </div>
+
+      {showManual && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center px-6" onClick={() => setShowManual(false)}>
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+          <div className="relative bg-[#111827] border border-slate-700 p-8 rounded-3xl max-w-sm w-full shadow-2xl text-left text-sm text-gray-300" onClick={e=>e.stopPropagation()}>
+            <h3 className="text-xl font-bold text-cyan-400 mb-6 border-b border-slate-800 pb-2 text-center font-serif">鑑定マニュアル</h3>
+            <ul className="space-y-4"><li>1. 週間バイオリズムおよび各運勢において、星1から5までが必ず適切に分布するように設計されています。</li><li>2. 「今日」の結果だけでなく、未来の予測も星の数によって一目で把握できます。</li><li>3. プルダウンの「不明」を含む全機能はそのまま維持されています。</li></ul>
+            <button onClick={() => setShowManual(false)} className="mt-8 w-full py-3 bg-gradient-to-r from-fuchsia-600 to-cyan-600 rounded-xl font-bold text-white shadow-lg">閉じる</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
