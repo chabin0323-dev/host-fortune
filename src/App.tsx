@@ -60,7 +60,7 @@ const App: React.FC = () => {
   const getSynchronizedComment = (type: string, stars: number) => {
     const database: any = {
       money: ["今は守りに徹する時。無駄な支出を抑えることが将来の豊かさの種になります。","収支のバランスを意識して。節約を楽しむ心の余裕が運気を好転させます。","金運は安定。自分への投資や知識を深めるための出費にツキがあります。","豊かさの波が接近中。直感を信じることでお得な情報を掴み取れるでしょう。","最強の財運が到来！大きな利益を手にする好機です。迷わず行動を。"],
-      health: ["心身ともに疲れが出やすい時期。無理をせず、今日は早めに休息をとって。","少し気力が減退。栄養のある食事と深い呼吸でエネルギーを回復させて。","健康状態は良好。軽い散歩を日常に取り入れることでさらに整います。","エネルギー満タン！活動的に動けますが、睡眠時間は削らずに。","生命力が最高潮！研ぎ澄まされた感覚で、何事にも全力で取り組めます. "],
+      health: ["心身ともに疲れが出やすい時期。無理をせず、今日は早めに休息をとって。","少し気力が減退。栄養のある食事と深い呼吸でエネルギーを回復させて。","健康状態は良好。軽い散歩を日常に取り入れることでさらに整います。","エネルギー満タン！活動的に動けますが、睡眠時間は削らずに。","生命力が最高潮！研ぎ澄まされた感覚で、何事にも全力で取り組めます。"],
       love: ["今は自分を磨く準備期間。焦らず、心の静寂を大切に過ごしてください。","周囲との距離感を大切に。控えめな振る舞いがあなたの魅力を引き立てます。","安定した運気。素直な笑顔を心がけることで身近な人との絆が深まります。","愛の女神が微笑んでいます。一歩踏み出す勇気が運命を劇的に変えるでしょう。","魂が共鳴するような最高の恋愛運。奇跡的な展開が訪れる予感があります。"],
       work: ["集中力が途切れがち。今あるタスクを丁寧に片付けることで信頼を維持して。","足元を固める時期。ルーチンワークに楽しみを見出すことで次への土台が完成。","着実な進歩が見込める日。周囲との協調性を大切にすると円滑に進みます。","独創的なアイデアが認められる兆し。自信を持って提案を発信しましょう。","仕事運は絶好調！卓越した手腕で周囲を圧倒し、新たなステージへ進めます。"]
     };
@@ -148,10 +148,12 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white font-sans flex flex-col items-center pb-20 relative text-center">
       
-      {/* ★【修正】whitespace-nowrapを削除し、完全に中央で自動改行されるように変更 */}
+      {/* ★【修正】絶対に右に隠れない、全画面中央配置のテロップ構造 */}
       {errorMsg && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-[85%] max-w-xs bg-red-600 text-white px-4 py-4 rounded-2xl shadow-2xl font-bold animate-bounce text-sm flex items-center justify-center text-center leading-normal">
-          ⚠️ {errorMsg}
+        <div className="fixed top-24 left-0 w-full z-[100] px-6 pointer-events-none">
+          <div className="bg-red-600 text-white px-4 py-4 rounded-2xl shadow-2xl font-bold animate-bounce text-sm mx-auto max-w-xs pointer-events-auto leading-normal">
+            ⚠️ {errorMsg}
+          </div>
         </div>
       )}
 
