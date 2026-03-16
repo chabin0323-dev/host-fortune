@@ -61,7 +61,7 @@ const App: React.FC = () => {
     const database: any = {
       money: ["今は守りに徹する時。無駄な支出を抑えることが将来の豊かさの種になります。","収支のバランスを意識して。節約を楽しむ心の余裕が運気を好転させます。","金運は安定。自分への投資や知識を深めるための出費にツキがあります。","豊かさの波が接近中。直感を信じることでお得な情報を掴み取れるでしょう。","最強の財運が到来！大きな利益を手にする好機です。迷わず行動を。"],
       health: ["心身ともに疲れが出やすい時期。無理をせず、今日は早めに休息をとって。","少し気力が減退。栄養のある食事と深い呼吸でエネルギーを回復させて。","健康状態は良好。軽い散歩を日常に取り入れることでさらに整います。","エネルギー満タン！活動的に動けますが、睡眠時間は削らずに。","生命力が最高潮！研ぎ澄まされた感覚で、何事にも全力で取り組めます。"],
-      love: ["今は自分を磨く準備期間. 焦らず、心の静寂を大切に過ごしてください。","周囲との距離感を大切に。控えめな振る舞いがあなたの魅力を引き立てます。","安定した運気。素直な笑顔を心がけることで身近な人との絆が深まります。","愛の女神が微笑んでいます。一歩踏み出す勇気が運命を劇的に変えるでしょう。","魂が共鳴するような最高の恋愛運。奇跡的な展開が訪れる予感があります。"],
+      love: ["今は自分を磨く準備期間。焦らず、心の静寂を大切に過ごしてください。","周囲との距離感を大切に。控えめな振る舞いがあなたの魅力を引き立てます。","安定した運気。素直な笑顔を心がけることで身近な人との絆が深まります。","愛の女神が微笑んでいます。一歩踏み出す勇気が運命を劇的に変えるでしょう。","魂が共鳴するような最高の恋愛運。奇跡的な展開が訪れる予感があります。"],
       work: ["集中力が途切れがち。今あるタスクを丁寧に片付けることで信頼を維持して。","足元を固める時期。ルーチンワークに楽しみを見出すことで次への土台が完成。","着実な進歩が見込める日。周囲との協調性を大切にすると円滑に進みます。","独創的なアイデアが認められる兆し。自信を持って提案を発信しましょう。","仕事運は絶好調！卓越した手腕で周囲を圧倒し、新たなステージへ進めます。"]
     };
     return database[type][stars - 1];
@@ -95,10 +95,8 @@ const App: React.FC = () => {
 
       const birthBase = (yVal === '不明') ? new Date(2000, 0, 1) : new Date(`${yVal}-${mVal === '不明' ? '01' : mVal.padStart(2,'0')}-${dVal === '不明' ? '01' : dVal.padStart(2,'0')}`);
       
-      // ★共通の星計算ロジック（ここを統一）
       const getStarByDate = (t: Date, offsetIdx: number = 0) => {
         const diff = Math.floor((t.getTime() - birthBase.getTime()) / (24 * 60 * 60 * 1000));
-        // offsetIdxを使って週間で星をバラけさせつつ、本日は固定されるようにする
         const hash = (totalSeed + offsetIdx * 13 + diff) % 100;
         if (hash < 20) return 1;
         if (hash < 40) return 2;
@@ -107,27 +105,28 @@ const App: React.FC = () => {
         return 5;
       };
       
-      // メインの星（本日の総合運用）
       const mainStar = getStarByDate(baseDate, 0);
 
+      // ★個別運勢の星を総合運(mainStar)に連動させる修正ロジック
+      const getSyncStar = (seedOffset: number) => {
+        // 総合運が5なら個別も4〜5、総合運が1なら個別も1〜2になるように調整
+        const variance = (totalSeed + seedOffset) % 2; // 0か1の変動
+        const base = mainStar === 1 ? 1 : mainStar === 5 ? 4 : mainStar - 1;
+        const final = Math.max(1, Math.min(5, base + variance));
+        return final;
+      };
+
+      const s_money = getSyncStar(1);
+      const s_health = getSyncStar(2);
+      const s_love = getSyncStar(3);
+      const s_work = getSyncStar(4);
+
       const dayLabels = ['日', '月', '火', '水', '木', '金', '土'];
-      
-      // 週間バイオリズム（0番目が「本日」なので、mainStarと完全に一致する）
       const weekly = Array.from({ length: 7 }, (_, idx) => {
         const d = new Date(baseDate);
         d.setDate(baseDate.getDate() + idx);
-        return { 
-          date: `${d.getMonth() + 1}/${d.getDate()}`, 
-          day: dayLabels[d.getDay()], 
-          star: getStarByDate(d, idx) 
-        };
+        return { date: `${d.getMonth() + 1}/${d.getDate()}`, day: dayLabels[d.getDay()], star: getStarByDate(d, idx) };
       });
-
-      // 個別運勢もmainStarやtotalSeedに基づき矛盾なく生成
-      const s_money = Math.max(1, Math.min(5, (totalSeed % 5) + 1));
-      const s_health = Math.max(1, Math.min(5, ((totalSeed + 13) % 5) + 1));
-      const s_love = Math.max(1, Math.min(5, ((totalSeed + 7) % 4) + 2));
-      const s_work = Math.max(1, Math.min(5, ((totalSeed + 11) % 5) + 1));
 
       setFortuneResult({
         dateStr: `${baseDate.getFullYear()}年${(baseDate.getMonth() + 1)}月${baseDate.getDate()}日`,
@@ -198,7 +197,6 @@ const App: React.FC = () => {
             <div className="bg-[#111] border border-white/10 p-5 rounded-xl text-center shadow-inner"><p className="text-cyan-400 text-[10px] font-bold uppercase tracking-widest">鑑定日：{fortuneResult.dateStr}</p></div>
             <div className="bg-[#1e1e1e] p-7 rounded-3xl border border-gray-800 shadow-xl">
               <h3 className="text-lg font-bold mb-4 text-white text-center border-b border-gray-800 pb-3">今日の総合運</h3>
-              {/* ★ここが総合運の星（mainStar） */}
               <div className="flex justify-center mb-5">{renderStars(fortuneResult.stars.total)}</div>
               <p className="text-[14px] text-gray-300 leading-relaxed font-light mb-4">{fortuneResult.general}</p>
               <div className="bg-white/5 p-4 rounded-xl border border-white/10">
@@ -214,14 +212,13 @@ const App: React.FC = () => {
                       <span className={`text-[10px] font-bold w-10 ${i === 0 ? 'text-indigo-400' : 'text-gray-500'}`}>{w.date}</span>
                       <span className={`text-xs w-4 ${i === 0 ? 'text-white' : 'text-gray-400'}`}>{w.day}</span>
                     </div>
-                    {/* ★ここが週間バイオリズムの星（i=0の時はmainStarと必ず一致） */}
                     <div>{renderStars(w.star, "text-sm")}</div>
                     <span className="text-[9px] text-gray-500 uppercase">{i === 0 ? 'Today' : ''}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-4">{[ { label: '金運', star: fortuneResult.stars.money.s, color: 'text-yellow-500', comm: fortuneResult.stars.money.c }, { label: '健康運', star: fortuneResult.stars.health.s, color: 'text-emerald-500', comm: fortuneResult.stars.health.c }, { label: '恋愛運', star: fortuneResult.stars.love.s, color: 'text-pink-500', comm: fortuneResult.stars.love.c }, { label: '仕事運', star: fortuneResult.stars.work.s, color: 'text-cyan-500', comm: fortuneResult.stars.work.c } ].map((u, i) => (
+            <div className="grid grid-cols-1 gap-4">{ [ { label: '金運', star: fortuneResult.stars.money.s, color: 'text-yellow-500', comm: fortuneResult.stars.money.c }, { label: '健康運', star: fortuneResult.stars.health.s, color: 'text-emerald-500', comm: fortuneResult.stars.health.c }, { label: '恋愛運', star: fortuneResult.stars.love.s, color: 'text-pink-500', comm: fortuneResult.stars.love.c }, { label: '仕事運', star: fortuneResult.stars.work.s, color: 'text-cyan-500', comm: fortuneResult.stars.work.c } ].map((u, i) => (
                 <div key={i} className="bg-[#1e1e1e] p-5 rounded-2xl border border-gray-800 shadow-lg"><div className="flex justify-between items-center mb-3"><p className={`font-bold text-sm ${u.color}`}>{u.label}</p><div className="flex gap-0.5">{renderStars(u.star, "text-sm")}</div></div><p className="text-[12px] text-gray-300 leading-relaxed font-light">{u.comm}</p></div>
               ))}
             </div>
@@ -236,7 +233,7 @@ const App: React.FC = () => {
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
           <div className="relative bg-[#111827] border border-slate-700 p-8 rounded-3xl max-w-sm w-full shadow-2xl text-left text-sm text-gray-300" onClick={e=>e.stopPropagation()}>
             <h3 className="text-xl font-bold text-cyan-400 mb-6 border-b border-slate-800 pb-2 text-center font-serif">鑑定マニュアル</h3>
-            <ul className="space-y-4"><li>1. 総合運の星と、週間バイオリズムの「本日」の星は完全に一致するように解析されます。</li><li>2. 行動指針は、今日のあなたの運気をさらに高める具体的なアクションです。</li><li>3. プルダウンの「不明」を含む全ての機能はそのまま維持されています。</li></ul>
+            <ul className="space-y-4"><li>1. 総合運と個別運勢（健康運・仕事運など）は、矛盾のないよう連動して算出されます。</li><li>2. 星5つの日は、各運勢も高い水準で安定し、絶好のチャンスが訪れることを示します。</li><li>3. プルダウンの「不明」を含む全機能はそのまま維持されています。</li></ul>
             <button onClick={() => setShowManual(false)} className="mt-8 w-full py-3 bg-gradient-to-r from-fuchsia-600 to-cyan-600 rounded-xl font-bold text-white shadow-lg">閉じる</button>
           </div>
         </div>
