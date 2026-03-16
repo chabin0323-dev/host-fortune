@@ -97,23 +97,22 @@ const App: React.FC = () => {
       
       const getStarByDate = (t: Date, offsetIdx: number = 0) => {
         const diff = Math.floor((t.getTime() - birthBase.getTime()) / (24 * 60 * 60 * 1000));
-        const hash = (totalSeed + offsetIdx * 13 + diff) % 100;
-        if (hash < 20) return 1;
-        if (hash < 40) return 2;
-        if (hash < 60) return 3;
-        if (hash < 80) return 4;
-        return 5;
+        // ★週間バイオリズムで必ず星3,4,5が混ざるように分布を固定せず揺らす
+        const hash = (totalSeed + offsetIdx * 23 + diff) % 100;
+        if (offsetIdx === 0) { // 今日の分は従来通りのメイン判定
+          if (hash < 15) return 1; if (hash < 30) return 2; if (hash < 55) return 3; if (hash < 80) return 4; return 5;
+        } else { // 週間予測は星3〜5が必ず入るように重みを調整
+          const weekHash = (hash + offsetIdx * 7) % 3; // 0, 1, 2のいずれか
+          return weekHash + 3; // 必ず星3, 4, 5のいずれかになる
+        }
       };
       
       const mainStar = getStarByDate(baseDate, 0);
 
-      // ★個別運勢の星を総合運(mainStar)に連動させる修正ロジック
       const getSyncStar = (seedOffset: number) => {
-        // 総合運が5なら個別も4〜5、総合運が1なら個別も1〜2になるように調整
-        const variance = (totalSeed + seedOffset) % 2; // 0か1の変動
+        const variance = (totalSeed + seedOffset) % 2;
         const base = mainStar === 1 ? 1 : mainStar === 5 ? 4 : mainStar - 1;
-        const final = Math.max(1, Math.min(5, base + variance));
-        return final;
+        return Math.max(1, Math.min(5, base + variance));
       };
 
       const s_money = getSyncStar(1);
@@ -156,7 +155,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black text-white font-sans flex flex-col items-center pb-20 relative text-center">
-      
       {errorMsg && (
         <div className="fixed top-24 left-0 w-full z-[100] px-6 pointer-events-none">
           <div className="bg-red-600 text-white px-4 py-4 rounded-2xl shadow-2xl font-bold animate-bounce text-sm mx-auto max-w-xs pointer-events-auto leading-normal">
@@ -227,17 +225,6 @@ const App: React.FC = () => {
           </div>
         )}
       </div>
-
-      {showManual && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center px-6" onClick={() => setShowManual(false)}>
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
-          <div className="relative bg-[#111827] border border-slate-700 p-8 rounded-3xl max-w-sm w-full shadow-2xl text-left text-sm text-gray-300" onClick={e=>e.stopPropagation()}>
-            <h3 className="text-xl font-bold text-cyan-400 mb-6 border-b border-slate-800 pb-2 text-center font-serif">鑑定マニュアル</h3>
-            <ul className="space-y-4"><li>1. 総合運と個別運勢（健康運・仕事運など）は、矛盾のないよう連動して算出されます。</li><li>2. 星5つの日は、各運勢も高い水準で安定し、絶好のチャンスが訪れることを示します。</li><li>3. プルダウンの「不明」を含む全機能はそのまま維持されています。</li></ul>
-            <button onClick={() => setShowManual(false)} className="mt-8 w-full py-3 bg-gradient-to-r from-fuchsia-600 to-cyan-600 rounded-xl font-bold text-white shadow-lg">閉じる</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
