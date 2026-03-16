@@ -2,14 +2,26 @@ import React, { useState, useEffect } from 'react';
 
 const DIRECTIONS = ["北", "北東", "東", "南東", "南", "南西", "西", "北西"];
 const L_ITEMS = ["天然石のブレスレット", "銀のブックマーク", "シルクのハンカチ", "アンティークの鍵", "革のパスケース", "クリスタルの置物", "手書きのメッセージ", "お気に入りの万年筆"];
-const L_COLORS = ["ミッドナイトネイビー", "シャンパンゴールド", "パールホワイト", "ローズマダー", "セージグリーン", "テラコッタ", "ライラック", "コバルトブルー"];
+const L_COLORS = ["ミッド midnightネイビー", "シャンパンゴールド", "パールホワイト", "ローズマダー", "セージグリーン", "テラコッタ", "ライラック", "コバルトブルー"];
 
 // ★可読性を確保するためのCSSスタイル
 const textShadow = { textShadow: '0 2px 4px rgba(0,0,0,0.5)' };
-// 神秘的な雰囲気を出すためのカードデザイン（深く透ける濃紺）
 const cardBg = "bg-[#0a0518]/90 backdrop-blur-sm border border-[#1e1540] shadow-[0_0_15px_rgba(100,255,255,0.1)] rounded-3xl p-6 shadow-xl text-left";
-const titleColor = "text-[#8deeee] font-bold"; // 鑑定タイトルの色（明るい水色）
-const textColor = "text-[#e0e0f0]"; // 通常文字の色（薄いグレー）
+const titleColor = "text-[#8deeee] font-bold";
+const textColor = "text-[#e0e0f0]";
+
+// ★CSSで描く神秘的な銀河背景のスタイル定義
+const galaxyBackground = {
+  backgroundColor: '#050010',
+  backgroundImage: `
+    radial-gradient(circle at 20% 30%, rgba(255, 100, 200, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(100, 100, 255, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(50, 0, 100, 0.2) 0%, transparent 60%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.01) 0px, rgba(255, 255, 255, 0.01) 1px, transparent 1px, transparent 10px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.01) 0px, rgba(255, 255, 255, 0.01) 1px, transparent 1px, transparent 10px)
+  `,
+  backgroundAttachment: 'fixed'
+};
 
 const App: React.FC = () => {
   const [page, setPage] = useState<'INPUT' | 'RESULT'>('INPUT');
@@ -28,7 +40,6 @@ const App: React.FC = () => {
   const [zdVal, setZdVal] = useState('不明');
 
   useEffect(() => {
-    // データ保存用のキーを独自のものに変更（ピンク版と混ざらないように）
     const saved = localStorage.getItem('mike_cosmic_v25');
     if (saved) {
       const d = JSON.parse(saved);
@@ -70,7 +81,7 @@ const App: React.FC = () => {
       money: ["今は守りに徹する時。無駄な支出を抑えることが将来の豊かさの種になります。","収支のバランスを意識して。節約を楽しむ心の余裕が運気を好転させます。","金運は安定。自分への投資や知識を深めるための出費にツキがあります。","豊かさの波が接近中。直感を信じることでお得な情報を掴み取れるでしょう。","最強の財運が到来！大きな利益を手にする好機です。迷わず行動を。"],
       health: ["心身ともに疲れが出やすい時期。無理をせず、今日は早めに休息をとって。","少し気力が減退。栄養のある食事と深い呼吸でエネルギーを回復させて。","健康状態は良好。軽い散歩を日常に取り入れることでさらに整います。","エネルギー満タン！活動的に動けますが、睡眠時間は削らずに。","生命力が最高潮！研ぎ澄まされた感覚で、何事にも全力で取り組めます。"],
       love: ["今は自分を磨く準備期間。焦らず、心の静寂を大切に過ごしてください。","周囲との距離感を大切に。控えめな振る舞いがあなたの魅力を引き立てます。","安定した運気。素直な笑顔を心がけることで身近な人との絆が深まります。","愛の女神が微笑んでいます。一歩踏み出す勇気が運命を劇的に変えるでしょう。","魂が共鳴するような最高の恋愛運。奇跡的な展開が訪れる予感があります。"],
-      work: ["集中力が途切れがち。今あるタスクを丁寧に片付けることで信頼を維持して。","足元を固める時期。ルーチンワークに楽しみを見出すことで次への土台が完成。","着実な進歩が見込める日。周囲との協調性を大切にすると円滑に進みます。","独創的なアイデアが認められる兆し。自信を持って提案を発信しましょう。","仕事運は絶好調！卓越した手腕で周囲を圧倒し、新たなステージへ進めます。"]
+      work: ["集中力が途切れがち。今あるタスクを丁寧に片付けることで信頼を維持して。","足元を固める時期。ルーチンワークに楽しみを見出すことで次への土台が完成。","着実な進歩が見込める日。周囲との協協調性を大切にすると円滑に進みます。","独創的なアイデアが認められる兆し。自信を持って提案を発信しましょう。","仕事運は絶好調！卓越した手腕で周囲を圧倒し、新たなステージへ進めます。"]
     };
     return database[type][stars - 1];
   };
@@ -158,12 +169,9 @@ const App: React.FC = () => {
   );
 
   return (
-    // ★全体背景をピンク一色から、神秘的な深く落ち着いた宇宙（星雲）の画像へ変更。文字色は可読性の高い薄グレーへ。
-    <div className="min-h-screen bg-[#050010] text-[#e0e0f0] font-sans flex flex-col items-center pb-20 relative text-center relative overflow-x-hidden">
+    // ★外部画像に頼らず、CSSで描いた神秘的な銀河背景（galaxyBackground）を適用
+    <div style={galaxyBackground} className="min-h-screen text-[#e0e0f0] font-sans flex flex-col items-center pb-20 relative text-center relative overflow-x-hidden">
       
-      {/* 背景画像（宇宙・星雲）をやわらかく配置 */}
-      <div className="absolute inset-0 z-0 opacity-40 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1599675931818-475a5933c061?q=80&w=2000&auto=format&fit=crop)' }}></div>
-
       <div className="absolute top-0 left-0 w-full z-[100] px-6 pointer-events-none mt-20">
         {errorMsg && (
           <div className="bg-red-600 text-white px-4 py-3 rounded-xl shadow-2xl font-bold animate-bounce text-sm mx-auto max-w-xs pointer-events-auto leading-normal">
@@ -172,8 +180,7 @@ const App: React.FC = () => {
         )}
       </div>
 
-      <div className="mt-8 mb-10 flex items-center justify-center gap-3 relative z-10">
-        {/* ロゴのデザインを神秘的なネオン風に */}
+      <div className="mt-8 mb-10 flex items-center justify-center gap-3 relative z-10 overflow-hidden">
         <div className="flex items-center gap-1 text-3xl font-bold" style={{ textShadow: '0 2px 10px rgba(100,255,255,0.7)' }}>
           <span className="text-blue-400">m</span><span className="text-green-400">i</span><span className="text-yellow-400">★</span><span className="text-blue-400">k</span><span className="text-purple-400">e</span>
         </div>
@@ -185,7 +192,6 @@ const App: React.FC = () => {
           <div className="flex flex-col items-center justify-center min-h-[60vh]"><div className="w-20 h-20 border-4 border-t-cyan-400 border-white/10 rounded-full animate-spin"></div><p className="mt-8 text-cyan-400 tracking-widest animate-pulse font-serif" style={textShadow}>運命を解析中...</p></div>
         ) : page === 'INPUT' ? (
           <div className="space-y-8 animate-in fade-in duration-500">
-            {/* 入力画面のタイトル */}
             <h2 className="text-2xl font-bold text-gray-100" style={textShadow}>情報を入力して下さい</h2>
             
             <div className="grid grid-cols-3 gap-3 text-xs">
@@ -204,12 +210,10 @@ const App: React.FC = () => {
             
             <div className="flex justify-end gap-2 pt-2">{!isLocked ? <button onClick={()=>{localStorage.setItem('mike_cosmic_v25', JSON.stringify({y:yVal,m:mVal,d:dVal,bt:btVal,cs:csVal,zd:zdVal})); setIsLocked(true);}} className="bg-white/5 text-gray-400 text-[10px] py-2 px-6 rounded-lg border border-white/10 shadow-md active:bg-white/10">入力を固定</button> : <><button onClick={()=>{localStorage.removeItem('mike_cosmic_v25'); setIsLocked(false);}} className="bg-red-900/30 text-red-300 text-[10px] py-2 px-4 rounded-lg">解除</button><button onClick={()=>{setYVal('不明');setMVal('不明');setDVal('不明');setBtVal('不明');setCsVal('不明');setZdVal('不明');setIsLocked(false);}} className="bg-white/5 text-gray-400 text-[10px] py-2 px-4 rounded-lg border border-white/10 active:bg-white/10">他人を占う</button></>}</div>
             
-            {/* ボタンのデザインをネオン風のグラデーションに */}
             <button onClick={handleStartFortune} className="w-full py-5 rounded-2xl font-bold text-lg text-white bg-gradient-to-r from-[#6a11cb] to-[#2575fc] shadow-[0_4px_15px_rgba(37,117,252,0.4)] active:scale-95 transition-all">鑑定を開始する</button>
           </div>
         ) : (
           <div className="space-y-6 animate-in slide-in-from-bottom-10 pb-10">
-            {/* ★鑑定結果画面：コンテンツ全体にカードデザイン（cardBg）を適用し、可読性を確保 */}
             <div className={`text-center ${cardBg}`}><p className={`${textColor} text-[10px] font-bold uppercase tracking-widest`}>鑑定日：{fortuneResult.dateStr}</p></div>
             
             <div className={cardBg}>
@@ -265,7 +269,6 @@ const App: React.FC = () => {
               </div>
             </div>
             
-            {/* 戻るボタンもネオン風に */}
             <button onClick={() => setPage('INPUT')} className="w-full py-4 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-xs tracking-widest mt-6 active:bg-white/10">戻る</button>
           </div>
         )}
@@ -274,7 +277,7 @@ const App: React.FC = () => {
       {showManual && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center px-6" onClick={() => setShowManual(false)}>
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
-          <div className="relative bg-[#0a0518] border border-[#1e1540] p-8 rounded-3xl max-w-sm w-full shadow-2xl text-left text-sm text-gray-300 space-y-4" onClick={e=>e.stopPropagation()}>
+          <div className="relative bg-[#0a0518] border border-[#1e1540] p-8 rounded-3xl max-w-sm w-full shadow-2xl text-left text-sm text-gray-300 space-y-4 overflow-hidden" onClick={e=>e.stopPropagation()}>
             <h3 className="text-xl font-bold text-cyan-300 mb-6 border-b border-[#1e1540] pb-2 text-center font-serif" style={textShadow}>鑑定マニュアル</h3>
             <p className={`${textColor} leading-relaxed`}>鑑定を開始するには、生年月日、血液型、星座、干支のうち、どれか一つでも情報を入力してください（全て不明でも鑑定可能です）。</p>
             <p className={`${textColor} leading-relaxed`}>「入力を固定」すると、次回からあなたの情報を自動で表示します。</p>
